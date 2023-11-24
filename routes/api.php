@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\API\V1\AUTH\AuthController;
+use App\Http\Controllers\API\V1\USER\CustomerController;
+use App\Http\Controllers\API\V1\USER\ManufacturerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -18,7 +21,14 @@ use Illuminate\Support\Facades\Route;
 
 use App\Http\Middleware\UserPermission;
 
-Route::middleware(['auth:sanctum', UserPermission::class])->group(function () {
+Route::post('/login', [AuthController::class, 'login']);
+
+
+Route::middleware(['auth:sanctum'])->group(function () {
+
+    Route::apiResource('manufacturers', ManufacturerController::class);
+    Route::apiResource('customers', CustomerController::class);
+
     Route::middleware(['user_permission:admin'])->group(function () {
         // Admin rotaları...
     });
