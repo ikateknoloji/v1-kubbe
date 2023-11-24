@@ -186,7 +186,7 @@ class CustomerController extends Controller
 
                 // Yeni resmi kaydet
                 $image = $request->file('image_url');
-                $imageName = $customer->user_id . '.png';
+                $imageName = $customer->user_id . $image->getClientOriginalExtension();
                 $path = $image->storeAs('public/images/profile', $imageName);
                 $customer->path = $path;
                 $customer->image_url = asset(Storage::url($path));
