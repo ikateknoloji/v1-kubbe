@@ -37,4 +37,10 @@ class Customer extends Model
             'path' => $this->path,
         ];
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'customer_id', 'user_id');
+    }
+
 }

@@ -14,4 +14,10 @@ class ProductType extends Model
     {
         return $this->belongsTo(ProductCategory::class, 'product_category_id');
     }
+
+    public function orderItems()
+    {
+        return $this->hasMany(OrderItem::class, 'product_type_id');
+    }
+
 }

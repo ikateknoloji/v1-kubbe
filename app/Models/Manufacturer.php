@@ -37,4 +37,10 @@ class Manufacturer extends Model
             'path' => $this->path,
         ];
     }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class, 'manufacturer_id', 'user_id');
+    }
+
 }
