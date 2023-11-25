@@ -1,6 +1,9 @@
 <?php
 
 use App\Http\Controllers\API\V1\AUTH\AuthController;
+use App\Http\Controllers\API\V1\Order\OrderController;
+use App\Http\Controllers\API\V1\Order\OrderImageController;
+use App\Http\Controllers\API\V1\Order\OrderItemController;
 use App\Http\Controllers\API\V1\Product\ProductCategoryController;
 use App\Http\Controllers\API\V1\Product\ProductTypeController;
 use App\Http\Controllers\API\V1\USER\CustomerController;
@@ -42,6 +45,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('product-types', ProductTypeController::class);
     Route::post('product-types/{productType}/update-image', [ProductTypeController::class, 'updateImage']);
     
+    
+    Route::apiResource('orders', OrderController::class);
+
+    // OrderItemController Rotaları
+    Route::apiResource('order-items', OrderItemController::class);
+
+    // OrderImageController Rotaları
+    Route::apiResource('order-images', OrderImageController::class);
+
 
     Route::middleware(['user_permission:admin'])->group(function () {
         // Admin rotaları...
