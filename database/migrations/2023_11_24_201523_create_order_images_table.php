@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('order_images', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->enum('type', ['L', 'D', 'PR', 'I', 'PI', 'SC']);
+            $table->enum('type', ['L', 'D', 'P', 'I', 'PR', 'SC']);
             $table->string('image_url');
             $table->string('path');
             $table->timestamps();

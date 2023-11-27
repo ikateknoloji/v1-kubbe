@@ -9,6 +9,8 @@ class Order extends Model
 {
     use HasFactory;
 
+
+
     protected $fillable = [
         'customer_id',
         'order_code',
@@ -19,6 +21,37 @@ class Order extends Model
         'is_rejected',
     ];
 
+    // 'status' sütunu için dönüştürme fonksiyonu
+    public function getStatusAttribute($value)
+    {
+        $statusMap = [
+            'OC' => 'Sipariş Onayı',
+            'DP' => 'Tasarım Aşaması',
+            'DA' => 'Tasarım Onaylandı',
+            'P'  => 'Ürün Aşaması',
+            'PA' => 'Ödeme Alındı',
+            'MS' => 'Üretici Seçimi',
+            'MA' => 'Üretici Onayı',
+            'PP' => 'Üretim Süreci',
+            'PR' => 'Ürün Hazır',
+            'PD' => 'Ürün Teslim Edildi',
+            'PIT' => 'Ürün Transferi',
+        ];
+
+        return $statusMap[$value] ?? $value;
+    }
+
+    // 'invoice_type' sütunu için dönüştürme fonksiyonu
+    public function getInvoiceTypeAttribute($value)
+    {
+        $invoiceTypeMap = [
+            'I' => 'Bireysel',
+            'C' => 'Kurumsal',
+        ];
+
+        return $invoiceTypeMap[$value] ?? $value;
+    }
+    
     public function customer()
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'user_id');
@@ -48,5 +81,7 @@ class Order extends Model
     {
         return $this->hasOne(OrderCancellation::class);
     }
+
+
 
 }

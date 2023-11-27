@@ -38,4 +38,30 @@ class AuthController extends Controller
         // Kimlik bilgileri geçersizse hata mesajı döndürür
         return response()->json(['error' => 'Geçersiz Kullanıcı bilgileri'], 401);
     }
+
+
+    /**
+    * Post
+    * Admin kullanıcısı oluşturma metodu
+    */
+    public function registerAdmin(Request $request)
+    {
+        // İsteği doğruluyoruz
+        $validatedData = $request->validate([
+            'name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'password' => 'required|string|min:8|confirmed',
+        ]);
+
+        // Yeni bir User nesnesi oluşturuluyor ve veritabanına kaydediliyor
+        $user = User::create([
+            'name' => $validatedData['name'],  // İsim bilgisi istekten alınıyor
+            'email' => $validatedData['email'],  // Email bilgisi istekten alınıyor
+            'password' => Hash::make($validatedData['password']),  // Şifre hash'leniyor
+            'user_type' => 'admin',  // Kullanıcı tipi 'admin' olarak ayarlanıyor
+        ]);
+
+        // Başarılı bir şekilde oluşturulduğuna dair bir mesaj dönülüyor
+        return response()->json(['message' => 'Admin kullanıcısı başarıyla oluşturuldu!'], 201);
+    }
 }
