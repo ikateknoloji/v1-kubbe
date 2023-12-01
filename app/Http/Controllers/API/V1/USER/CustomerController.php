@@ -59,7 +59,7 @@ class CustomerController extends Controller
 
             if ($request->hasFile('image_url')) {
                 $image = $request->file('image_url');
-                $imageName = $validatedData['user_id'] . $image->getClientOriginalExtension();
+                $imageName = $validatedData['user_id'] .'.'. $image->getClientOriginalExtension();
                 $path = $image->storeAs('public/images/profile', $imageName);
                 $validatedData['path'] = $path;
                 $validatedData['image_url'] = asset(Storage::url($path));
@@ -73,7 +73,7 @@ class CustomerController extends Controller
             DB::commit();
 
         
-            return response()->json(['message' => 'Müşteri başarıyla oluşturuldu', 'customer' ,$customer], 201);
+            return response()->json(['message' => 'Müşteri başarıyla oluşturuldu', 'result' => $customer], 201);
         } catch (\Exception $e) {
             // Hata durumunda rollback yap
             DB::rollback();

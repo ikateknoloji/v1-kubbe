@@ -26,44 +26,42 @@ class ProductCategoryController extends Controller
         // Gelen verileri doğrulama
         $request->validate([
             'category' => 'required|unique:product_categories,category',
-            'image_url' => 'required|url|ends_with:jpg,jpeg,png,gif',
+            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
         ]);
-
+    
         try {
             // Transaksiyon başlat
             DB::beginTransaction();
-
+    
             // Yeni kategori oluştur
             $category = ProductCategory::create([
                 'category' => $request->input('category'),
             ]);
-
+    
             if ($request->hasFile('image_url')) {
                 $image = $request->file('image_url');
-
+    
                 $imageName = $category->id.$image->extension(); // veya başka bir uzantı
                 $path  = $image->storeAs('public/images/categories', $imageName);
-
+    
                 // Kategoriyi güncelle, resim yolu ile birlikte
                 $category->update(['path' => $path , 'image_url' => asset(Storage::url($path))]);
             }
-
-
-
-
+    
             // Transaksiyonu tamamla
             DB::commit();
-
+    
             // Başarılı oluşturma yanıtı
             return response()->json(['category' => $category], 201);
         } catch (\Exception $e) {
             // Hata durumunda transaksiyonu geri al
             DB::rollback();
-
+    
             // Hata yanıtı
             return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
         }
     }
+    
 
 
     /**
@@ -144,7 +142,7 @@ class ProductCategoryController extends Controller
     {
         // Gelen verileri doğrulama
         $request->validate([
-            'image_url' => 'required|url|ends_with:jpg,jpeg,png,gif',
+            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
         ]);
 
         try {
@@ -180,6 +178,5 @@ class ProductCategoryController extends Controller
             return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
         }
     }
-
 
 }

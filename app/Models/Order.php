@@ -28,14 +28,15 @@ class Order extends Model
             'OC' => 'Sipariş Onayı',
             'DP' => 'Tasarım Aşaması',
             'DA' => 'Tasarım Onaylandı',
-            'P'  => 'Ürün Aşaması',
+            'P'  => 'Ödeme Aşaması',
             'PA' => 'Ödeme Alındı',
             'MS' => 'Üretici Seçimi',
             'MA' => 'Üretici Onayı',
-            'PP' => 'Üretim Süreci',
+            'PP' => 'Üretimde',
             'PR' => 'Ürün Hazır',
+            'PIT' => 'Ürün Transfer Aşaması',
             'PD' => 'Ürün Teslim Edildi',
-            'PIT' => 'Ürün Transferi',
+
         ];
 
         return $statusMap[$value] ?? $value;
@@ -56,7 +57,7 @@ class Order extends Model
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'user_id');
     }
-
+    
     public function manufacturer()
     {
         return $this->belongsTo(Manufacturer::class, 'manufacturer_id', 'user_id');

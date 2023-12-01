@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 
 class AuthController extends Controller
@@ -24,9 +25,6 @@ class AuthController extends Controller
             // Kullanıcının e-postasına göre kullanıcıyı bulur
             $user = User::where('email', $request->email)->first();
     
-            // Gelen isteğin kullanıcı tipini alır
-            $userType = $user->user_type;
-    
             // Kullanıcı tipine göre bir token oluşturur
             $token =  $user->createToken('ApiToken')->plainTextToken;
     
@@ -40,7 +38,6 @@ class AuthController extends Controller
         return response()->json(['error' => 'Geçersiz Kullanıcı bilgileri'], 401);
     }
 
-
     /**
     * Post
     * Admin kullanıcısı oluşturma metodu
@@ -49,14 +46,12 @@ class AuthController extends Controller
     {
         // İsteği doğruluyoruz
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
         ]);
 
         // Yeni bir User nesnesi oluşturuluyor ve veritabanına kaydediliyor
         $user = User::create([
-            'name' => $validatedData['name'],  // İsim bilgisi istekten alınıyor
             'email' => $validatedData['email'],  // Email bilgisi istekten alınıyor
             'password' => Hash::make($validatedData['password']),  // Şifre hash'leniyor
             'user_type' => 'admin',  // Kullanıcı tipi 'admin' olarak ayarlanıyor
@@ -66,35 +61,41 @@ class AuthController extends Controller
         return response()->json(['message' => 'Admin kullanıcısı başarıyla oluşturuldu!'], 201);
     }
 
-        /**
+    /**
     * Post İsteği
     * Üretici veya Müşteri kullanıcısı oluşturma metodu
     */
     public function registerUser(Request $request)
     {
-        // İsteği doğruluyoruz
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:users',
-            'user_type' => 'required|in:manufacturer,customer',
-        ]);
+        try {
+            // İsteği doğruluyoruz
+            $validatedData = $request->validate([
+                'email' => 'required|string|email|max:255|unique:users',
+                'user_type' => 'required|in:manufacturer,customer',
+            ]);
     
-        // Rastgele bir geçici şifre oluşturuluyor
-        $tempPassword = Str::random(10);
+            // Rastgele bir geçici şifre oluşturuluyor
+            $tempPassword = Str::random(10);
     
-        // Yeni bir User nesnesi oluşturuluyor ve veritabanına kaydediliyor
-        $user = User::create([
-            'name' => $validatedData['name'],  // İsim bilgisi istekten alınıyor
-            'email' => $validatedData['email'],  // Email bilgisi istekten alınıyor
-            'password' => Hash::make($tempPassword),  // Geçici şifre hash'leniyor
-            'user_type' => $validatedData['user_type'],  // Kullanıcı tipi istekten alınıyor
-            'is_temp_password' => true,  // Geçici şifre olduğunu belirtmek için 'is_temp_password' alanı true olarak ayarlanıyor
-        ]);
+            // Veritabanı işlemlerini bir işlem içinde gerçekleştiriyoruz
+            DB::transaction(function () use ($validatedData, $tempPassword) {
+                // Yeni bir User nesnesi oluşturuluyor ve veritabanına kaydediliyor
+                $user = User::create([
+                    'email' => $validatedData['email'],
+                    'password' => Hash::make($tempPassword),
+                    'user_type' => $validatedData['user_type'],
+                    'is_temp_password' => true,
+                ]);
     
-        Mail::to($user->email)->send(new TemporaryPasswordMail($tempPassword));
-        // Başarılı bir şekilde oluşturulduğuna dair bir mesaj dönülüyor
-
-        return response()
-        ->json(['message' => ucfirst($validatedData['user_type']) . ' kullanıcısı başarıyla oluşturuldu!'], 201);
-    } 
+                Mail::to($user->email)->send(new TemporaryPasswordMail($tempPassword));
+            });
+    
+            // Başarılı bir şekilde oluşturulduğuna dair bir mesaj döndür
+            return response()->json(['message' => ucfirst($validatedData['user_type']) . ' kullanıcısı başarıyla oluşturuldu!'], 201);
+        } catch (\Exception $e) {
+            // Hata durumunda geri alma işlemi yapılır
+            return response()->json(['error' => 'Kullanıcı oluşturma işlemi sırasında bir hata oluştu.'], 500);
+        }
+    }
+    
 }

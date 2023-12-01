@@ -1,6 +1,11 @@
 <?php
 
 use App\Http\Controllers\API\V1\AUTH\AuthController;
+use App\Http\Controllers\API\V1\AUTH\PasswordResetController;
+use App\Http\Controllers\API\V1\Manage\GetOrderController;
+use App\Http\Controllers\API\V1\Manage\GetRejectOrderController;
+use App\Http\Controllers\API\V1\Manage\OrderManageController;
+use App\Http\Controllers\API\V1\Manage\RejectOrderController;
 use App\Http\Controllers\API\V1\Order\OrderController;
 use App\Http\Controllers\API\V1\Order\OrderImageController;
 use App\Http\Controllers\API\V1\Order\OrderItemController;
@@ -10,6 +15,8 @@ use App\Http\Controllers\API\V1\USER\CustomerController;
 use App\Http\Controllers\API\V1\USER\ManufacturerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\UserPermission;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -22,49 +29,335 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+
+
+
+
 // routes/web.php
 
-use App\Http\Middleware\UserPermission;
 
+
+/**
+ * ? Kullanıcı giriş rotası.
+ * TODO: Test amaçlı postman üzerinde istekler gerçekleştir
+ */
+
+// Kullanıcı girişi için rota
 Route::post('/login', [AuthController::class, 'login']);
 
+// Şifre sıfırlama için rota
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
+    
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
-    Route::apiResource('manufacturers', ManufacturerController::class);
-    Route::post('manufacturers/{manufacturer}/update-image', [ManufacturerController::class, 'updateImage']);
 
-    Route::apiResource('customers', CustomerController::class);
-    Route::post('customers/{customer}/update-image', [CustomerController::class, 'updateImage']);
 
-    // Product Category Rotası
-    Route::apiResource('product-categories', ProductCategoryController::class);
-    Route::post('product-categories/{productCategory}/update-image', [ProductCategoryController::class, 'updateImage']);
-
-    // Product Type Rotası
-    Route::apiResource('product-types', ProductTypeController::class);
-    Route::post('product-types/{productType}/update-image', [ProductTypeController::class, 'updateImage']);
+    /**
+     * ? şifre sıfırlama işlemlerinin yapıldığı rotalar.
+     * TODO: Test amaçlı postman üzerinde istekler gerçekleştir
+     */
+    // Geçici şifre ile şifre sıfırlama için rota
+    Route::post('/reset-password/temp-password', [PasswordResetController::class, 'resetPasswordWithTempPassword']);
     
-    
+    // Kullanıcının şifresini güncelleme için rota
+    Route::post('/update-password', [PasswordResetController::class, 'updatePassword']);
+
+
+
+
+    /**
+     * ? Sipariş oluşturma düzenleme gibi işlemlerin yapıldığı rota.
+     * TODO: Test amaçlı postman üzerinde istekler gerçekleştir
+     */
+
+    // OrderController
     Route::apiResource('orders', OrderController::class);
-
     // OrderItemController Rotaları
     Route::apiResource('order-items', OrderItemController::class);
-
     // OrderImageController Rotaları
     Route::apiResource('order-images', OrderImageController::class);
 
 
+
+    
+    /**
+     * ? Admin kullanıcısı için oluşturulmuş korumalı rotalardır.
+     * TODO: Sadece admin kullanıcısı ile işlemleri gerçekleştir.
+     */
+
     Route::middleware(['user_permission:admin'])->group(function () {
-        // Admin rotaları...
+
+
+        /**
+        * ? Ürün tipleri ve Ürün kategorilerini yönetmek için kullandığımız rotalardır.
+        * TODO: Sadece admin kullanıcısı ile işlemleri gerçekleştir. Ürün kategorisi oluştur.
+        */
+
+
+
+        // Product Categories
+        Route::group(['prefix' => 'product-categories'], function () {
+          // Ürün kategorileri için kaynak rotalarını tanımlar.
+          Route::apiResource('.', ProductCategoryController::class);
+
+          // Ürün kategorisi resmini güncellemek için özel bir rota.
+          Route::post('{productCategory}/update-image', [ProductCategoryController::class, 'updateImage']);
+        });
+
+        
+
+        
+        // Product Types
+        Route::group(['prefix' => 'product-types'], function () {
+            // TODO: Ürün tipleri için kaynak rotalarını tanımlar.
+            Route::apiResource('.', ProductTypeController::class);
+          
+            // TODO: Ürün tipi resmini güncellemek için özel bir rota.
+            Route::post('{productType}/update-image', [ProductTypeController::class, 'updateImage']);
+        });
+
+
+
+
+        /**
+         * ? Admin Customer ve Manufacturer kullanıcısı oluşturmak için korumalı rotalardır.
+         * TODO: Sadece admin kullanıcısı ile işlemleri gerçekleştir. Admin oluştur.
+          */
+
+        Route::group(['prefix' => 'register'], function () {
+            // Admin kaydı için özel bir rota.
+            Route::post('admin', [AuthController::class, 'registerAdmin']);
+        
+            // Kullanıcı kaydı için özel bir rota.
+            Route::post('user', [AuthController::class, 'registerUser']);
+        });
+
+
+
+
+
+        /**
+         * ? Sipariş bilgilerinin servis rotası.
+         * TODO: Sadece Üretici kullanıcısı ile işlemleri gerçekleştir.
+         */
+        Route::prefix('admin')->group(function () {
+          Route::get('orders/active', [GetOrderController::class, 'getActiveOrders']);
+          Route::get('orders/{status}', [GetOrderController::class, 'getOrdersByStatus']);
+          Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
+        });
+
+
+
+        /**
+         * ? İptal edilen sipariş bilgilerinin servis rotası.
+         * TODO: Sadece Üretici kullanıcısı ile işlemleri gerçekleştir.
+         */
+        Route::prefix('admin')->group(function () {
+          // Müşteri tarafından reddedilen siparişleri getirir.
+          Route::get('rejected-orders', [GetRejectOrderController::class, 'getRejectedCustomerOrders']);
+        });
+
+
+        /**
+         * ? Şipariş durumu güncelleme.
+         * TODO: Test et.
+         */
+        Route::prefix('admin/orders')->group(function () {
+          // Sipariş durumunu tasarım aşamasına geçirme
+          Route::post('/transition-to-design-phase/{order}', [OrderManageController::class, 'transitionToDesignPhase']);
+          
+          // Tasarımı onaylama ve resmi kaydetme
+          Route::post('/approve-design/{order}', [OrderManageController::class, 'approveDesign']);
+          
+          // Ödemeyi doğrulama
+          Route::post('/verify-payment/{order}', [OrderManageController::class, 'verifyPayment']);
+          
+          // Üretici seçimi işlemini gerçekleştirme
+          Route::post('/select-manufacturer/{order}', [OrderManageController::class, 'selectManufacturer']);
+          
+          // Ürünü kargo aşamasına işaretlenmiş olarak güncelleme
+          Route::post('/mark-product-in-transition/{order}', [OrderManageController::class, 'markProductInTransition']);
+          
+          // Ürünü teslim edilmiş olarak işaretlenmiş olarak güncelleme
+          Route::post('/mark-product-delivered/{order}', [OrderManageController::class, 'markProductDelivered']);
+        });
+      
+
+
+
+        /**
+         * ? Admin tarafından şipariş reddetme ve iptal işlemlerinin gerçekleştirildiği yer.
+         * TODO: Tüm rotaları test et ve edildiğine dair check işareti koy.
+        */
+        Route::group(['prefix' => 'manage'], function () {
+            // TODO: Admin tarafından bir siparişi reddeder.
+            Route::post('admin-reject-order/{orderId}', [RejectOrderController::class, 'adminRejectOrder']);
+        
+            // TODO: Bir siparişi iptal eder.
+            Route::post('cancel-order/{orderId}', [RejectOrderController::class, 'cancelOrder']);
+        });       
+        
+    
+
     });
 
+
+
+
+    /**
+     * ? Müşteri kullanıcısı için oluşturulmuş korumalı rotalardır.
+     * TODO: Sadece müşteri kullanıcısı ile işlemleri gerçekleştir.
+     */
     Route::middleware(['user_permission:customer'])->group(function () {
-        // Customer rotaları...
+        
+        /**
+         * ? Müşteri bilgileri düzenleme resim ekleme veya güncelleme
+         * TODO: Kullanıcı bilgileri ekle ve düzenle.
+         */
+
+         Route::group(['prefix' => 'customers'], function () {
+          // TODO: Müşteri kaynak rotalarını tanımlar.
+          Route::apiResource('', CustomerController::class);
+      
+          // TODO: Müşteri resmini güncellemek için özel bir rota.
+          Route::post('{customer}/update-image', [CustomerController::class, 'updateImage']);
+         });
+
+  
+
+        /**
+         * ?  Müşteri sipariş bilgilerinin servis rotası.
+         * TODO: Sadece Üretici kullanıcısı ile işlemleri gerçekleştir.
+         */
+        Route::prefix('customer')->group(function () {
+          Route::get('orders', [GetOrderController::class, 'getCustomerOrders']);
+          Route::get('orders/{status}', [GetOrderController::class, 'getCustomerOrdersByStatus']);
+          Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
+        });
+
+        /**
+         * ? Şipariş durum bilgisini değiştirme.
+         * TODO: Tüm testleri yap.
+        */
+        Route::prefix('customer/orders')->group(function () {
+          // Tasarımı onaylama ve ödemeyi gerçekleştirme
+          Route::post('/approve-payment-and-proceed/{order}', [OrderManageController::class, 'approvePaymentAndProceed']);
+
+          // Ürünü teslim edilmiş olarak işaretlenmiş olarak güncelleme
+          Route::post('/mark-product-delivered/{order}', [OrderManageController::class, 'markProductDelivered']);
+        });
+
+
+        /**
+         * ? Şipariş üzerinde iptal talebi yade red durumları oluşturmak.
+         * TODO: Tüm testleri yap.
+        */
+
+        Route::group(['prefix' => 'manage'], function () {
+          // TODO: Müşteri tarafından bir siparişi reddeder.
+          Route::post('/manage/customer-reject-order/{orderId}', [RejectOrderController::class, 'customerRejectOrder']);
+
+          // TODO: Bir sipariş iptal talebi oluşturur.
+          Route::post('/manage/cancel-order-request/{orderId}', [RejectOrderController::class, 'cancelOrderRequest']);
+        });    
     });
+    
+
+
+
+
+
+    /**
+     * ? Üretici kullanıcısı için oluşturulmuş korumalı rotalardır.
+     * TODO: Sadece Üretici kullanıcısı ile işlemleri gerçekleştir.
+     */
 
     Route::middleware(['user_permission:manufacturer'])->group(function () {
-        // Manufacturer rotaları...
+
+
+        /**
+         * ? Üretici bilgileri düzenleme resim ekleme veya güncelleme
+         * TODO: Kullanıcı bilgileri ekle ve düzenle.
+         */
+         Route::group(['prefix' => 'manufacturers'], function () {
+          // TODO: Üretici kaynak rotalarını tanımlar.
+          Route::apiResource('', ManufacturerController::class);
+      
+          // TODO: Üretici resmini güncellemek için özel bir rota.
+          Route::post('{manufacturer}/update-image', [ManufacturerController::class, 'updateImage']);
+         });
+        
+
+
+        /**
+         * ? Üretici ile ilişkili şiparişleri servis eder.
+         * TODO: Tüm testleri yap.
+          */
+
+        Route::prefix('manufacturer')->group(function () {
+          Route::get('orders', [GetOrderController::class, 'getManufacturerOrders']);
+          Route::get('orders/{status}', [GetOrderController::class, 'getManufacturerOrdersByStatus']);
+          Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
+        });
+
+
+
+        /**
+         * ? Üretici ile ilişkili reddedilen şiparişleri servis eder.
+         * TODO: Tüm testleri yap.
+          */
+
+        Route::prefix('manufacturer')->group(function () {
+          // Üretici tarafından reddedilen siparişleri getirir.
+          Route::get('rejected-orders', [GetRejectOrderController::class, 'getRejectedManufacturerOrders']);
+        });
+
+        /**
+         * ?  Siparişi onaylama.
+         * TODO: Tüm testleri yap.
+          */
+
+        Route::prefix('manufacturer/orders')->group(function () {
+          // Siparişi onaylama
+          Route::get('/confirm/{order}', [OrderManageController::class, 'confirmManufacturer']);
+          
+          // Üretim sürecini başlatma rotası
+          Route::post('/orders/{order}/start-production', [OrderManageController::class, 'startProduction']);
+          
+          // Ürünü hazır olarak işaretlenmiş olarak güncelleme
+          Route::put('/mark-product-ready/{order}', [OrderManageController::class, 'markProductReady']);
+        });
+
+        /**
+         * ? Şiparişin reddetme ile ilgili olarak bir rota oluşturuldu.
+         * TODO: Tüm testleri yap.
+          */
+
+        Route::group(['prefix' => 'manage'], function () {
+
+          // TODO: Üretici tarafından bir siparişi reddeder.
+          Route::post('manufacturer-reject-order/{orderId}', [RejectOrderController::class, 'manufacturerRejectOrder']);
+
+          Route::get('manufacturer-reject-order/{orderId}', [RejectOrderController::class, 'manufacturerRejectOrder']);
+
+        });
+
+
+
     });
+
+
+
+
+
+
+    /**
+    * TODO: Müşteri ve Üretici için tekil siparişin getirilmesiyle ilgili olarak tekil bir rota oluşturulacak.
+    */
+
+    // Belirtilen 'id' değerine sahip tekil siparişi getirir.
+    Route::get('/manage/orders/{id}', [GetOrderController::class, 'getOrderById']);
+
 });
 

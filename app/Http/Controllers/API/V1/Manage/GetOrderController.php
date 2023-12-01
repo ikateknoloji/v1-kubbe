@@ -16,14 +16,18 @@ class GetOrderController extends Controller
      */
     public function getActiveOrders()
     {
+        
         // 'A' (Active) durumuna sahip ve teslim edilmemiş siparişleri al
         $orders = Order::where('is_rejected', 'A')
             ->whereDoesntHave('orderItems', function ($query) {
                 $query->where('status', 'PD'); // 'PD' (Ürün Teslim Edildi) durumuna sahip orderItems olmayanları al
             })
-            ->with(['customer.user' => function ($query) {
+            ->with(['customer' => function ($query) {
                 // İlgili müşteri bilgilerini getir
-                $query->select('id', 'name', 'surname', 'company_name', 'email', 'phone');
+                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
             }])
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate();
@@ -42,12 +46,22 @@ class GetOrderController extends Controller
         // Belirtilen 'status' değerine sahip siparişleri al
         $orders = Order::where('status', $status)
             ->where('is_rejected', 'A')
-            ->with(['customer.user', 'manufacturer.user' => function ($query) {
+            ->with(['customer' => function ($query) {
                 // İlgili müşteri ve üretici bilgilerini getir
-                $query->select('id', 'name', 'surname', 'company_name', 'email', 'phone');
+                $query->select('user_id','id', 'name', 'surname', 'company_name', 'phone')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
+            }
+            , 'manufacturer' => function ($query) {
+                // İlgili müşteri ve üretici bilgilerini getir
+                $query->select('user_id','id', 'name', 'surname', 'company_name', 'phone')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
             }])
-            ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate();
+        ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+        ->paginate();
 
         return response()->json(['orders' => $orders], 200);
     }
@@ -148,6 +162,5 @@ class GetOrderController extends Controller
 
         return response()->json(['orders' => $orders], 200);
     }
-
 
 }

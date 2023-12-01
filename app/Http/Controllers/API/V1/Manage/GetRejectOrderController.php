@@ -77,6 +77,4 @@ class GetRejectOrderController extends Controller
         return response()->json(['orders' => $orders], 200);
     }
 
-
-
 }

@@ -82,10 +82,10 @@ class PasswordResetController extends Controller
 
     /**
      * Kullanıcının şifresini günceller.
-    *
-    * @param  \Illuminate\Http\Request  $request
-    * @return \Illuminate\Http\Response
-    */
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
     public function updatePassword(Request $request)
     {
         // Gelen verileri doğrula
@@ -99,7 +99,7 @@ class PasswordResetController extends Controller
     
         // Mevcut şifre yanlışsa hata döndür
         if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['message' => 'Mevcut şifre yanlış'], 404);
+            return response()->json(['error' => 'Mevcut şifre yanlış'], 401);
         }
     
         // Kullanıcının şifresini güncelle ve kaydet
@@ -108,4 +108,5 @@ class PasswordResetController extends Controller
         // Başarılı mesajı döndür
         return response()->json(['message' => 'Şifre başarıyla güncellendi'], 200);
     }
+
 }

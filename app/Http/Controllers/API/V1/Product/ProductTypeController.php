@@ -33,7 +33,7 @@ class ProductTypeController extends Controller
         $request->validate([
             'product_type' => 'required|unique:product_types,product_type',
             'product_category_id' => 'required|exists:product_categories,id',
-            'image_url' => 'required|url',
+            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
         ]);
 
         try {
@@ -149,7 +149,7 @@ class ProductTypeController extends Controller
     {
         // Gelen verileri doğrulama
         $request->validate([
-            'image_url' => 'required|url',
+            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
         ]);
 
         try {

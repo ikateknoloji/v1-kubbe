@@ -12,118 +12,130 @@ class RejectOrderController extends Controller
 {
     /**
      * Admin tarafından bir siparişi reddeder.
-     *
+     *  
+     * @param  Request  $request
      * @param  int  $orderId
-     * @param  string  $reason
      * @return \Illuminate\Http\JsonResponse
      */
-    public function adminRejectOrder($orderId, $reason)
+    public function adminRejectOrder(Request $request, $orderId)
     {
-        // Siparişi bul
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $reason = $request->input('reason');
+
         $order = Order::find($orderId);
-    
+
         if (!$order) {
             return response()->json(['message' => 'Sipariş bulunamadı.'], 404);
         }
-    
-        // Siparişi reddet ve gerekli alanları güncelle
-        $order->is_rejected = 'CR'; // 'CR' değeri admin tarafından reddedildiği anlamına gelir
+
+        $order->is_rejected = 'R';
         $order->save();
-    
-        // Reddetme nedenini ve diğer detayları içeren bir 'reject' kaydı oluştur
+
         $reject = new Reject([
             'reason' => $reason,
         ]);
-    
+
         $order->rejects()->save($reject);
-    
+
         return response()->json(['message' => 'Sipariş admin tarafından reddedildi.'], 200);
     }
 
     /**
      * Müşteri tarafından bir siparişi reddeder.
-     *
+     * ? customer
+     * @param  Request  $request
      * @param  int  $orderId
-     * @param  string  $reason
      * @return \Illuminate\Http\JsonResponse
      */
-    public function customerRejectOrder($orderId, $reason)
+    public function customerRejectOrder(Request $request, $orderId)
     {
-        // Siparişi bul
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $reason = $request->input('reason');
+
         $order = Order::find($orderId);
-    
+
         if (!$order) {
             return response()->json(['message' => 'Sipariş bulunamadı.'], 404);
         }
-    
-        // Siparişi reddet ve gerekli alanları güncelle
-        $order->is_rejected = 'MR'; // 'MR' değeri müşteri tarafından reddedildiği anlamına gelir
+
+        $order->is_rejected = 'MR';
         $order->save();
-    
-        // Reddetme nedenini ve diğer detayları içeren bir 'reject' kaydı oluştur
+
         $reject = new Reject([
             'reason' => $reason,
         ]);
-    
+
         $order->rejects()->save($reject);
-    
+
         return response()->json(['message' => 'Sipariş müşteri tarafından reddedildi.'], 200);
     }
-    
+
     /**
      * Üretici tarafından bir siparişi reddeder.
-     *
+     * ? manufacturer
+     * @param  Request  $request
      * @param  int  $orderId
-     * @param  string  $reason
      * @return \Illuminate\Http\JsonResponse
      */
-    public function manufacturerRejectOrder($orderId, $reason)
+    public function manufacturerRejectOrder(Request $request, $orderId)
     {
-        // Siparişi bul
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $reason = $request->input('reason');
+
         $order = Order::find($orderId);
-    
+
         if (!$order) {
             return response()->json(['message' => 'Sipariş bulunamadı.'], 404);
         }
-    
-        // Siparişi reddet ve gerekli alanları güncelle
-        $order->is_rejected = 'R'; // 'R' değeri üretici tarafından reddedildiği anlamına gelir
+
+        $order->is_rejected = 'R';
         $order->save();
-    
-        // Reddetme nedenini ve diğer detayları içeren bir 'reject' kaydı oluştur
+
         $reject = new Reject([
             'reason' => $reason,
         ]);
-    
+
         $order->rejects()->save($reject);
-    
+
         return response()->json(['message' => 'Sipariş üretici tarafından reddedildi.'], 200);
     }
-    
+
     /**
      * Bir sipariş iptal talebi oluşturur.
-     *
+     * ? customer
+     * @param  Request  $request
      * @param  int  $orderId
-     * @param  string  $reason
      * @return \Illuminate\Http\JsonResponse
      */
-    public function cancelOrderRequest($orderId, $reason)
+    public function cancelOrderRequest(Request $request, $orderId)
     {
-        // Siparişi bul
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $reason = $request->input('reason');
+
         $order = Order::find($orderId);
 
         if (!$order) {
             return response()->json(['message' => 'Sipariş bulunamadı.'], 404);
         }
 
-        // Siparişi iptal et ve gerekli alanları güncelle
-        $order->status = 'ORC'; // 'ORC' değeri siparişin iptal edildiği anlamına gelir
+        $order->status = 'ORC';
         $order->save();
 
-        // İptal nedenini ve diğer detayları içeren bir 'orderCancellation' kaydı oluştur
         $orderCancellation = new OrderCancellation([
             'reason' => $reason,
-            'approved' => false, // İptal talebi henüz onaylanmamış
+            'approved' => false,
         ]);
 
         $order->orderCancellation()->save($orderCancellation);
@@ -133,33 +145,35 @@ class RejectOrderController extends Controller
 
     /**
      * Bir siparişi iptal eder.
-     *
+     * ? admin
+     * @param  Request  $request
      * @param  int  $orderId
-     * @param  string  $reason
      * @return \Illuminate\Http\JsonResponse
      */
-    public function cancelOrder($orderId, $reason)
+    public function cancelOrder(Request $request, $orderId)
     {
-        // Siparişi bul
+        $request->validate([
+            'reason' => 'required|string',
+        ]);
+
+        $reason = $request->input('reason');
+
         $order = Order::find($orderId);
 
         if (!$order) {
             return response()->json(['message' => 'Sipariş bulunamadı.'], 404);
         }
 
-        // Siparişi iptal et ve gerekli alanları güncelle
-        $order->status = 'C'; // 'C' değeri siparişin iptal edildiği anlamına gelir
+        $order->status = 'C';
         $order->save();
 
-        // İptal nedenini ve diğer detayları içeren bir 'orderCancellation' kaydı oluştur
         $orderCancellation = new OrderCancellation([
             'reason' => $reason,
-            'approved' => true, // İptal talebi onaylandı
+            'approved' => true,
         ]);
 
         $order->orderCancellation()->save($orderCancellation);
 
         return response()->json(['message' => 'Sipariş iptal edildi.'], 200);
     }
-
 }

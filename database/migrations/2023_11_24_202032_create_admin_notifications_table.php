@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('admin_notifications', function (Blueprint $table) {
             $table->id();
-            $table->text('message');
+            $table->json('message');
             $table->boolean('is_read')->default(false);
             $table->unsignedBigInteger('read_by_user_id')->nullable();
             $table->timestamps();

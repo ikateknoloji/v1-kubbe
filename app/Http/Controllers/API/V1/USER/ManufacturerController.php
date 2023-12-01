@@ -66,7 +66,7 @@ class ManufacturerController extends Controller
             // Eğer istekte bir resim varsa, Laravel'in depolama sistemini kullanarak kaydet
             if ($request->hasFile('image_url')) {
                 $image = $request->file('image_url');
-                $imageName = $validatedData['user_id'] . $image->getClientOriginalExtension();
+                $imageName = $validatedData['user_id'] .'.'. $image->getClientOriginalExtension();
                 $path = $image->storeAs('public/images/profile', $imageName);
                 $validatedData['path'] = $path;
                 $validatedData['image_url'] = asset(Storage::url($path));
