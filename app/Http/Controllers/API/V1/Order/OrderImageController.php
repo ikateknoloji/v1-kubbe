@@ -2,7 +2,9 @@
 
 namespace App\Http\Controllers\API\V1\Order;
 
+use App\Events\OrderStatusChangedEvent;
 use App\Http\Controllers\Controller;
+use App\Models\Order;
 use App\Models\OrderImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -21,48 +23,60 @@ class OrderImageController extends Controller
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Yeni oluşturulan kaynağı depoda sakla.
      */
     public function store(Request $request)
     {
-        // Gelen verileri doğrula
-        $request->validate([
+        try {
+             // Gelen verileri doğrula
+            $validatedData = $request->validate([
             'order_id' => 'required|exists:orders,id',
             'type' => 'required|in:L,D,PR,I,PI,SC',
             'image_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-    
-        try {
+            ], [
+            'order_id.required' => 'Sipariş zorunludur.',
+            'order_id.exists' => 'Geçersiz sipariş .',
+            'type.required' => 'Resim tipi zorunludur.',
+            'type.in' => 'Geçersiz resim tipi.',
+            'image_url.required' => 'Resim dosyası zorunludur.',
+            'image_url.image' => 'Geçersiz resim formatı.',
+            'image_url.mimes' => 'Geçersiz resim MIME türü.',
+            'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
         
             // Resmi kaydet
             $image = $request->file('image_url');
-            $imageName =  $request->input('type') . $request->input('order_id') . '.' . $image->getClientOriginalExtension();
+            $imageName =  $validatedData['type'] . $validatedData['order_id'] . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('public/images/orders', $imageName);
         
             // Yeni sipariş resmi oluştur
             $orderImage = OrderImage::create([
-                'order_id' => $request->input('order_id'),
-                'type' => $request->input('type'),
+                'order_id' => $validatedData['order_id'],
+                'type' => $validatedData['type'],
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
             ]);
-        
+
+            // Event'i hemen broadcast et
+            broadcast(new OrderStatusChangedEvent($orderImage->order, [
+                'title' => 'Yeni Sipariş Resmi Eklendi',
+            'body' => 'Siparişe yeni bir resim eklendi.',
+            'order' => $orderImage->order,
+            ]));
+
             // Transaksiyonu tamamla
             DB::commit();
-        
+
             // Başarılı oluşturma yanıtı
             return response()->json(['order_image' => $orderImage], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-        
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
-
 
     /**
      * Display the specified resource.
@@ -92,9 +106,16 @@ class OrderImageController extends Controller
             // OrderImage kaydını sil
             $orderImage->delete();
 
+            // Event'i hemen broadcast et
+            broadcast(new OrderStatusChangedEvent($orderImage->order, [
+                'title' => 'Resim dosyası silindi',
+                'body' => 'İlgili siparişin resmi silindi.',
+                'order' =>  $orderImage->order,
+            ]));
+
             // Transaksiyonu tamamla
             DB::commit();
-
+            
             // Başarılı silme yanıtı
             return response()->json(['message' => 'Sipariş resmi başarıyla silindi'], 200);
         } catch (\Exception $e) {
@@ -112,11 +133,16 @@ class OrderImageController extends Controller
     public function updateImage(Request $request, OrderImage $orderImage)
     {
         // Gelen verileri doğrula
-        $request->validate([
-            'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-        ]);
-
         try {
+
+            $request->validate([
+                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ],[
+             'image_url.image' => 'Geçersiz resim formatı.',
+             'image_url.mimes' => 'Geçersiz resim MIME türü.',
+             'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
 
@@ -136,18 +162,24 @@ class OrderImageController extends Controller
                 ]);
             }
 
+            // Event'i hemen broadcast et
+            broadcast(new OrderStatusChangedEvent($orderImage->order, [
+                'title' => 'Resim dosyası güncellendi',
+                'body' => 'İlgili siparişin resmi güncellendi.',
+                'order' =>  $orderImage->order,
+            ]));
+
             // Transaksiyonu tamamla
             DB::commit();
 
             // Başarılı güncelleme yanıtı
             return response()->json(['order_image' => $orderImage], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
+
 
 }

@@ -146,23 +146,36 @@ return [
     |
     */
 
+
+
     'attributes' => [
-     'user_id' => 'kullanıcı ID',
-     'name' => 'ad',
-     'surname' => 'soyad',
-     'phone' => 'telefon',
-     'tax_number' => 'vergi numarası',
-     'tax_office' => 'vergi dairesi',
-     'company_name' => 'şirket adı',
-     'address' => 'adres',
-     'city' => 'şehir',
-     'district' => 'ilçe',
-     'country' => 'ülke',
-     'image_url' => 'resim dosyası',
-     'path' => 'dosya yolu',
-     'product_type' => 'Ürün Tipi',
-     'product_category_id' => 'Ürün Kategorisi',
-     'category' => 'Kategori',
+        'invoice_type' => 'Fatura Türü',
+        'offer_price' => 'Teklif Fiyatı',
+        'order_items.*.product_type_id' => 'Sipariş Öğesi Ürün Türü',
+        'order_items.*.quantity' => 'Sipariş Öğesi Miktar',
+        'order_items.*.color' => 'Sipariş Öğesi Renk',
+        'image_url' => 'Resim',
+        'order_id' => 'Sipariş ID',
+        'type' => 'Tür',
+        'order_code' => 'Sipariş Kodu',
+        'status' => 'Durum',
+        'manufacturer_id' => 'Üretici ID',
+        'is_rejected' => 'Reddedildi Mi',
+        'order_items.*.order_id' => 'Sipariş Öğesi Sipariş ID',
+        'orderItems.*.order_id' => 'Sipariş ID',
+        'orderImages.*.order_id' => 'Sipariş ID',
+        'orderImages.*.type' => 'Resim Türü',
+        'orderImages.*.image_url' => 'Resim URL',
+        'orderImages.*.path' => 'Resim Yolu',
+        'orderItem.*.order_id' => 'Sipariş ID',
+        'orderItem.*.product_type_id' => 'Sipariş Öğesi Ürün Türü ID',
+        'orderItem.*.quantity' => 'Sipariş Öğesi Miktar',
+        'orderItem.*.color' => 'Sipariş Öğesi Renk',
+        'customer_id' => 'Müşteri ID',
+        'message' => 'Mesaj',
+        'admin-notifications' => 'Yönetici Bildirim Kanalı',
     ],
+    
+    
 
 ];

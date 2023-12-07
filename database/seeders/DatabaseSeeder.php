@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         
-        
+        /*
         // Admin kullanıcısını oluştur
         User::factory()->create(['user_type' => 'admin']);
 
@@ -42,14 +42,14 @@ class DatabaseSeeder extends Seeder
         ->count(10)
         ->create()
         ;
-        
+        */
 
 
     
         Order::factory()
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->count(1))
-        ->count(10)
+        ->count(20)
         ->create();
     }
 }

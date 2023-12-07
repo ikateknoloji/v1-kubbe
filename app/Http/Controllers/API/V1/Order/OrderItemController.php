@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\API\V1\Order;
 
+use App\Events\OrderStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -25,39 +26,56 @@ class OrderItemController extends Controller
      */
     public function store(Request $request)
     {
-        // Gelen verileri doğrula
-        $request->validate([
-            'order_id' => 'required|exists:orders,id',
-            'product_type_id' => 'required|exists:product_types,id',
-            'quantity' => 'required|integer|min:1',
-            'color' => 'required|string',
-        ]);
-
         try {
+            // Gelen verileri doğrula
+            $validatedData = $request->validate([
+                'order_id' => 'required|exists:orders,id',
+                'product_type_id' => 'required|exists:product_types,id',
+                'quantity' => 'required|integer|min:1',
+                'color' => 'required|string',
+            ], [
+                'order_id.required' => 'Sipariş ID zorunludur.',
+                'order_id.exists' => 'Geçersiz sipariş ID.',
+                'product_type_id.required' => 'Ürün tipi zorunludur.',
+                'product_type_id.exists' => 'Geçersiz ürün tipi.',
+                'quantity.required' => 'Miktar zorunludur.',
+                'quantity.integer' => 'Miktar bir sayı olmalıdır.',
+                'quantity.min' => 'Miktar en az 1 olmalıdır.',
+                'color.required' => 'Renk zorunludur.',
+                'color.string' => 'Renk bir metin olmalıdır.',
+            ]);
+        
             // Transaksiyon başlat
             DB::beginTransaction();
 
-            // Yeni sipariş öğesi oluştur
-            $orderItem = OrderItem::create([
-                'order_id' => $request->input('order_id'),
-                'product_type_id' => $request->input('product_type_id'),
-                'quantity' => $request->input('quantity'),
-                'color' => $request->input('color'),
+        // Yeni sipariş öğesi oluştur
+        $orderItem = OrderItem::create([
+            'order_id' => $validatedData['order_id'],
+            'product_type_id' => $validatedData['product_type_id'],
+                'quantity' => $validatedData['quantity'],
+                'color' => $validatedData['color'],
             ]);
-
+        
+            // Event'i hemen broadcast et
+            broadcast(new OrderStatusChangedEvent(
+                        $orderItem->order, [
+                        'title' => 'Sipariş üzerinde eklemeler gerçekleşti',
+                        'body' => 'Bir sipariş öğesi oluşturuldu.',
+                        'order' => $orderItem->order,
+                    ]));
+        
             // Transaksiyonu tamamla
             DB::commit();
-
+        
             // Başarılı oluşturma yanıtı
             return response()->json(['order_item' => $orderItem], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
-            DB::rollback();
-
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            
+        } catch (\Illuminate\Validation\ValidationException $e) {
+                DB::rollback();
+                return response()->json(['errors' => $e->errors()], 422);
         }
     }
+
 
     /**
      * Display the specified resource.
@@ -72,14 +90,22 @@ class OrderItemController extends Controller
      */
     public function update(Request $request, OrderItem $orderItem)
     {
-        // Gelen verileri doğrula
-        $request->validate([
-            'product_type_id' => 'sometimes|required|exists:product_types,id',
-            'quantity' => 'sometimes|required|integer|min:1',
-            'color' => 'sometimes|required|string',
-        ]);
-
         try {
+            // Gelen verileri doğrula
+            $request->validate([
+                'product_type_id' => 'sometimes|required|exists:product_types,id',
+                'quantity' => 'sometimes|required|integer|min:1',
+                'color' => 'sometimes|required|string',
+            ], [
+                'product_type_id.required' => 'Ürün tipi  zorunludur.',
+                'product_type_id.exists' => 'Geçersiz ürün tipi .',
+                'quantity.required' => 'Miktar zorunludur.',
+                'quantity.integer' => 'Miktar bir sayı olmalıdır.',
+                'quantity.min' => 'Miktar en az 1 olmalıdır.',
+                'color.required' => 'Renk zorunludur.',
+                'color.string' => 'Renk bir metin olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
 
@@ -91,20 +117,25 @@ class OrderItemController extends Controller
             // Gelen istek verilerini kullanarak kaynağı güncelle
             $orderItem->update($request->only(['product_type_id', 'quantity', 'color']));
 
+            // Event'i hemen broadcast et
+            broadcast(new OrderStatusChangedEvent(
+                $orderItem->order,[
+                'title' => 'Sipariş Güncellendi', 
+                'body' => 'Sipariş içeriği  güncellendi.', 
+                'order' => $orderItem->order
+                ]
+            ));
+ 
             // Transaksiyonu tamamla
             DB::commit();
 
             // Başarılı güncelleme yanıtı
             return response()->json(['order_item' => $orderItem], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
-
 
 
     /**
@@ -123,6 +154,15 @@ class OrderItemController extends Controller
 
             // Sipariş öğesini sil
             $orderItem->delete();
+
+            // Event'i hemen broadcast et
+            broadcast(new OrderStatusChangedEvent(
+                $orderItem->order,[
+                'title' => 'Sipariş kalemi üzerinde silinme işlemi gerçekleşti.', 
+                'body' => 'Bir sipariş öğesi silindi.', 
+                'order' => $orderItem->order
+                ]
+            ));
 
             // Transaksiyonu tamamla
             DB::commit();

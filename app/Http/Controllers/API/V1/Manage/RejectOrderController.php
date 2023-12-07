@@ -2,6 +2,9 @@
 
 namespace App\Http\Controllers\API\V1\Manage;
 
+use App\Events\AdminNotificationEvent;
+use App\Events\CustomerNotificationEvent;
+use App\Events\OrderStatusChangedEvent;
 use App\Http\Controllers\Controller;
 use App\Models\Order;
 use App\Models\OrderCancellation;
@@ -21,6 +24,9 @@ class RejectOrderController extends Controller
     {
         $request->validate([
             'reason' => 'required|string',
+        ], [
+            'reason.required' => 'Neden alanı gereklidir.',
+            'reason.string' => 'Neden alanı bir metin olmalıdır.',
         ]);
 
         $reason = $request->input('reason');
@@ -39,7 +45,13 @@ class RejectOrderController extends Controller
         ]);
 
         $order->rejects()->save($reject);
-
+        // Müşteriye bildirim gönder
+        broadcast(new CustomerNotificationEvent($order->customer_id, [
+            'title' => 'Sipariş Reddedildi',
+            'body' => 'Siparişiniz admin tarafından reddedildi. Sebep: ' . $reason,
+            'order' => $order,
+        ]));
+        
         return response()->json(['message' => 'Sipariş admin tarafından reddedildi.'], 200);
     }
 
@@ -54,6 +66,9 @@ class RejectOrderController extends Controller
     {
         $request->validate([
             'reason' => 'required|string',
+        ], [
+            'reason.required' => 'Neden alanı gereklidir.',
+            'reason.string' => 'Neden alanı bir metin olmalıdır.',
         ]);
 
         $reason = $request->input('reason');
@@ -73,6 +88,13 @@ class RejectOrderController extends Controller
 
         $order->rejects()->save($reject);
 
+            // Adminlere bildirim gönder
+        broadcast(new AdminNotificationEvent([
+            'title' => 'Sipariş Reddedildi',
+            'body' => 'Admin tarafından bir sipariş reddedildi. Sipariş numarası: ' . $order->order_code,
+            'order' => $order,
+        ]));
+        
         return response()->json(['message' => 'Sipariş müşteri tarafından reddedildi.'], 200);
     }
 
@@ -87,6 +109,9 @@ class RejectOrderController extends Controller
     {
         $request->validate([
             'reason' => 'required|string',
+        ], [
+            'reason.required' => 'Neden alanı gereklidir.',
+            'reason.string' => 'Neden alanı bir metin olmalıdır.',
         ]);
 
         $reason = $request->input('reason');
@@ -106,6 +131,13 @@ class RejectOrderController extends Controller
 
         $order->rejects()->save($reject);
 
+        // Adminlere bildirim gönder
+        broadcast(new AdminNotificationEvent([
+            'title' => 'Sipariş Reddedildi',
+            'body' => 'Üretici tarafından bir sipariş reddedildi. Sipariş numarası: ' . $order->order_code,
+            'order' => $order,
+        ]));
+
         return response()->json(['message' => 'Sipariş üretici tarafından reddedildi.'], 200);
     }
 
@@ -120,6 +152,9 @@ class RejectOrderController extends Controller
     {
         $request->validate([
             'reason' => 'required|string',
+        ], [
+            'reason.required' => 'Neden alanı gereklidir.',
+            'reason.string' => 'Neden alanı bir metin olmalıdır.',
         ]);
 
         $reason = $request->input('reason');
@@ -140,6 +175,13 @@ class RejectOrderController extends Controller
 
         $order->orderCancellation()->save($orderCancellation);
 
+        // Adminlere bildirim gönder
+        broadcast(new AdminNotificationEvent([
+            'title' => 'Sipariş İptal Talebi Oluşturuldu',
+            'body' => 'Müşteri tarafından bir sipariş iptal talebi oluşturuldu. Sipariş numarası: ' . $order->order_code,
+            'order' => $order,
+        ]));
+
         return response()->json(['message' => 'Sipariş iptal edildi ve onay bekliyor.'], 200);
     }
 
@@ -154,6 +196,9 @@ class RejectOrderController extends Controller
     {
         $request->validate([
             'reason' => 'required|string',
+        ], [
+            'reason.required' => 'Neden alanı gereklidir.',
+            'reason.string' => 'Neden alanı bir metin olmalıdır.',
         ]);
 
         $reason = $request->input('reason');
@@ -173,6 +218,14 @@ class RejectOrderController extends Controller
         ]);
 
         $order->orderCancellation()->save($orderCancellation);
+
+        // OrderStatusChangedEvent olayını yayınla
+        event(new OrderStatusChangedEvent($order,[
+            'title' => 'Sipariş Durumu Değişti',
+            'body' => 'Sipariş ' . $order->order_code . ' durumu değişti.',
+            'order' => $order,
+        ]));
+
 
         return response()->json(['message' => 'Sipariş iptal edildi.'], 200);
     }

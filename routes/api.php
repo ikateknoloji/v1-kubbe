@@ -109,9 +109,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         
         // Product Types
-        Route::group(['prefix' => 'product-types'], function () {
-            // TODO: Ürün tipleri için kaynak rotalarını tanımlar.
-            Route::apiResource('.', ProductTypeController::class);
+        Route::group(['prefix' => 'products'], function () {
+          // TODO: Ürün tipleri için kaynak rotalarını tanımlar.
+          Route::apiResource('product-types', ProductTypeController::class);
           
             // TODO: Ürün tipi resmini güncellemek için özel bir rota.
             Route::post('{productType}/update-image', [ProductTypeController::class, 'updateImage']);
@@ -144,7 +144,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('admin')->group(function () {
           Route::get('orders/active', [GetOrderController::class, 'getActiveOrders']);
           Route::get('orders/{status}', [GetOrderController::class, 'getOrdersByStatus']);
-          Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
+          Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
         });
 
 
@@ -167,7 +167,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
           // Sipariş durumunu tasarım aşamasına geçirme
           Route::post('/transition-to-design-phase/{order}', [OrderManageController::class, 'transitionToDesignPhase']);
           
-          // Tasarımı onaylama ve resmi kaydetme
+          // Tasarımı onaylama ve resmi kaydetme 
+          // TODO : get'e dönüştür
           Route::post('/approve-design/{order}', [OrderManageController::class, 'approveDesign']);
           
           // Ödemeyi doğrulama
@@ -181,6 +182,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
           
           // Ürünü teslim edilmiş olarak işaretlenmiş olarak güncelleme
           Route::post('/mark-product-delivered/{order}', [OrderManageController::class, 'markProductDelivered']);
+
+          // Fatura eklemek için rota
+          Route::post('/order/{order}/add-invoice', [OrderManageController::class, 'addInvoice']);
         });
       
 
@@ -196,6 +200,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
             // TODO: Bir siparişi iptal eder.
             Route::post('cancel-order/{orderId}', [RejectOrderController::class, 'cancelOrder']);
+
         });       
         
     
@@ -216,9 +221,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
          * TODO: Kullanıcı bilgileri ekle ve düzenle.
          */
 
-         Route::group(['prefix' => 'customers'], function () {
+         Route::group(['prefix' => 'company'], function () {
           // TODO: Müşteri kaynak rotalarını tanımlar.
-          Route::apiResource('', CustomerController::class);
+          Route::apiResource('customers', CustomerController::class);
       
           // TODO: Müşteri resmini güncellemek için özel bir rota.
           Route::post('{customer}/update-image', [CustomerController::class, 'updateImage']);
@@ -233,7 +238,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('customer')->group(function () {
           Route::get('orders', [GetOrderController::class, 'getCustomerOrders']);
           Route::get('orders/{status}', [GetOrderController::class, 'getCustomerOrdersByStatus']);
-          Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
+          Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
         });
 
         /**
@@ -280,15 +285,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
          * ? Üretici bilgileri düzenleme resim ekleme veya güncelleme
          * TODO: Kullanıcı bilgileri ekle ve düzenle.
          */
-         Route::group(['prefix' => 'manufacturers'], function () {
+         Route::group(['prefix' => 'company'], function () {
           // TODO: Üretici kaynak rotalarını tanımlar.
-          Route::apiResource('', ManufacturerController::class);
+          Route::apiResource('manufacturers', ManufacturerController::class);
       
           // TODO: Üretici resmini güncellemek için özel bir rota.
           Route::post('{manufacturer}/update-image', [ManufacturerController::class, 'updateImage']);
          });
         
-
 
         /**
          * ? Üretici ile ilişkili şiparişleri servis eder.
@@ -323,7 +327,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('/confirm/{order}', [OrderManageController::class, 'confirmManufacturer']);
           
           // Üretim sürecini başlatma rotası
-          Route::post('/orders/{order}/start-production', [OrderManageController::class, 'startProduction']);
+          Route::get('/start-production/{order}', [OrderManageController::class, 'startProduction']);
           
           // Ürünü hazır olarak işaretlenmiş olarak güncelleme
           Route::put('/mark-product-ready/{order}', [OrderManageController::class, 'markProductReady']);
@@ -346,9 +350,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     });
-
-
-
 
 
 

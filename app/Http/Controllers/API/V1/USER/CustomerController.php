@@ -34,8 +34,6 @@ class CustomerController extends Controller
      */
     public function store(Request $request)
     {
-
-
         try {
             // Veritabanı işlemlerini transaksiyon içinde gerçekleştir
             DB::beginTransaction();
@@ -53,6 +51,20 @@ class CustomerController extends Controller
                 'district' => 'required|string',
                 'country' => 'required|string',
                 'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'name.required' => 'Ad alanı gereklidir.',
+                'surname.required' => 'Soyad alanı gereklidir.',
+                'phone.required' => 'Telefon alanı gereklidir.',
+                'tax_number.required' => 'Vergi numarası alanı gereklidir.',
+                'tax_office.required' => 'Vergi dairesi alanı gereklidir.',
+                'company_name.required' => 'Şirket adı alanı gereklidir.',
+                'address.required' => 'Adres alanı gereklidir.',
+                'city.required' => 'Şehir alanı gereklidir.',
+                'district.required' => 'İlçe alanı gereklidir.',
+                'country.required' => 'Ülke alanı gereklidir.',
+                'image_url.image' => 'Geçerli bir resim dosyası yükleyin.',
+                'image_url.mimes' => 'Resim dosyası formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'image_url.max' => 'Resim dosyası 2048 KB boyutundan büyük olmamalıdır.',
             ]);
             
             $validatedData['user_id'] = Auth::id();
@@ -74,12 +86,9 @@ class CustomerController extends Controller
 
         
             return response()->json(['message' => 'Müşteri başarıyla oluşturuldu', 'result' => $customer], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda rollback yap
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. '. $e ], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -115,6 +124,21 @@ class CustomerController extends Controller
                 'city' => 'required|string',
                 'district' => 'required|string',
                 'country' => 'required|string',
+                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'name.required' => 'Ad alanı gereklidir.',
+                'surname.required' => 'Soyad alanı gereklidir.',
+                'phone.required' => 'Telefon alanı gereklidir.',
+                'tax_number.required' => 'Vergi numarası alanı gereklidir.',
+                'tax_office.required' => 'Vergi dairesi alanı gereklidir.',
+                'company_name.required' => 'Şirket adı alanı gereklidir.',
+                'address.required' => 'Adres alanı gereklidir.',
+                'city.required' => 'Şehir alanı gereklidir.',
+                'district.required' => 'İlçe alanı gereklidir.',
+                'country.required' => 'Ülke alanı gereklidir.',
+                'image_url.image' => 'Geçerli bir resim dosyası yükleyin.',
+                'image_url.mimes' => 'Resim dosyası formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'image_url.max' => 'Resim dosyası 2048 KB boyutundan büyük olmamalıdır.',
             ]);
 
             // Müşteri bilgilerini güncelle
@@ -124,12 +148,9 @@ class CustomerController extends Controller
             DB::commit();
 
             return response()->json(['message' => 'Müşteri başarıyla güncellendi', 'customer' => $customer], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda rollback yap
+        }  catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. '. $e ], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -199,12 +220,10 @@ class CustomerController extends Controller
             DB::commit();
 
             return response()->json(['message' => 'Müşteri resmi başarıyla güncellendi', 'customer' => $customer], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda rollback yap
+            
+        }  catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. '. $e ], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 

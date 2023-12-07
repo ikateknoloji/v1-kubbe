@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\API\V1\Manage;
 
 use App\Events\AdminNotificationEvent;
+use App\Events\CustomerNotificationEvent;
+use App\Events\ManufacturerNotificationEvent;
 use App\Events\UserNotificationEvent;
 use App\Http\Controllers\Controller;
 use App\Models\AdminNotification;
@@ -30,6 +32,13 @@ class OrderManageController extends Controller
             // Sipariş durumunu 'DP' (Tasarım Aşaması) olarak güncelle
             $order->update(['status' => 'DP']);
 
+            // Müşteriye bildirim gönder
+            broadcast(new CustomerNotificationEvent($order->customer_id, [
+                'title' => 'Sipariş Durumu Değişti',
+                'body' => 'Sipariş tasarım aşamasına geçirildi.',
+                'order' => $order->toArray(),
+            ]));
+
             return response()->json(['message' => 'Sipariş tasarım aşamasına geçirildi.'], 200);
         }
 
@@ -44,35 +53,57 @@ class OrderManageController extends Controller
     */
     public function approveDesign(Request $request, Order $order)
     {
-        // Sipariş durumunu kontrol et, sadece 'DP' durumundakileri güncelle
-        if ($order->status === 'Tasarım Aşaması') {
+        try {
+
             // Gelen resim dosyasını kontrol et
             $request->validate([
                 'design_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'design_image.required' => 'Lütfen bir tasarım resmi yükleyin.',
+                'design_image.image' => 'Dosya bir resim olmalıdır.',
+                'design_image.mimes' => 'Dosya formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'design_image.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
-        
-            // Resim dosyasını yükle ve bilgileri al
-            $image = $request->file('design_image');
-            $imageName = 'design_' . $order->id . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/images/designs', $imageName);
-        
-            // OrderImage modeline order_id'yi ekleyerek kaydet
-            $orderImage = new OrderImage([
+
+            // Sipariş durumunu kontrol et, sadece 'DP' durumundakileri güncelle
+            if ($order->status === 'Tasarım Aşaması') {
+
+            
+                // Resim dosyasını yükle ve bilgileri al
+                $image = $request->file('design_image');
+                $imageName = 'design_' . $order->id . '.' . $image->getClientOriginalExtension();
+                $path = $image->storeAs('public/images/designs', $imageName);
+            
+                // OrderImage modeline order_id'yi ekleyerek kaydet
+                $orderImage = new OrderImage([
                 'type' => 'D', // Tasarım tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
                 'order_id' => $order->id,
-            ]);
-        
-            $order->orderImages()->save($orderImage);
-        
-            // Sipariş durumunu 'DA' (Onay) olarak güncelle
-            $order->update(['status' => 'DA']);
-        
-            return response()->json(['message' => 'Tasarım onaylandı ve kaydedildi.'], 200);
+                ]);
+            
+                $order->orderImages()->save($orderImage);
+            
+                // Sipariş durumunu 'DA' (Onay) olarak güncelle
+                $order->update(['status' => 'DA']);
+
+                // Müşteriye bildirim gönder
+                broadcast(new CustomerNotificationEvent($order->customer_id, [
+                    'title' => 'Tasarım Onaylandı',
+                    'body' => 'Sipariş tasarımı onaylandı ve kaydedildi.',
+                    'order' => $order->toArray(),
+                ]));
+
+                return response()->json(['message' => 'Tasarım onaylandı ve kaydedildi.'], 200);
+            }
+
+            return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için tasarım onayı verilemiyor.'], 400);
+
+        }  catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            return response()->json(['errors' => $e->errors()], 422);
         }
     
-        return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için tasarım onayı verilemiyor.'], 400);
     }
     
 
@@ -84,10 +115,15 @@ class OrderManageController extends Controller
     {
         // Sipariş durumunu kontrol et, sadece 'DA' durumundakileri güncelle
         if ($order->status === 'Tasarım Onaylandı') {
-            // Gelen resim dosyasını kontrol et
+
             $request->validate([
                 'payment_proof' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048',
+            ], [
+                'payment_proof.required' => 'Ödeme kanıtı dosyası gereklidir.',
+                'payment_proof.mimes' => 'Dosya formatı jpeg, png, jpg, gif, svg veya pdf olmalıdır.',
+                'payment_proof.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
+            
 
             // Resim dosyasını yükle ve bilgileri al
             $image = $request->file('payment_proof');
@@ -99,13 +135,20 @@ class OrderManageController extends Controller
                 'type' => 'P', // Ödeme tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
-                'order_id' => $order->id,
+                'order_id' => $order->id->toArray(),
             ]);
 
             $order->orderImages()->save($orderImage);
 
             // Sipariş durumunu 'P' (Ödeme Onayı) olarak güncelle
             $order->update(['status' => 'P']);
+
+                    // Admin'e bildirim gönder
+            broadcast(new AdminNotificationEvent([
+                'title' => 'Ödeme Onaylandı',
+                'body' => 'Sipariş ödemesi yapıldı lütfen kontrol edip onaylayın.',
+                'order' => $order,
+            ]));
 
             return response()->json(['message' => 'Ödeme onaylandı ve sipariş aşamasına geçildi.'], 200);
         }
@@ -123,6 +166,14 @@ class OrderManageController extends Controller
         if ($order->status === 'Ödeme Aşaması') {
             // Ödeme durumunu 'PA' (Ödeme Onaylandı) olarak güncelle
             $order->update(['status' => 'PA']);
+
+            // Admin'e bildirim gönder
+            broadcast(new CustomerNotificationEvent($order->customer_id ,[
+                'title' => 'Ödeme Onaylandı',
+                'body' => 'Sipariş ödemesi onaylandı ve sipariş aşamasına geçildi.',
+                'order' => $order->toArray(),
+            ]));
+
 
             return response()->json(['message' => 'Ödeme doğrulandı.'], 200);
         }
@@ -148,6 +199,13 @@ class OrderManageController extends Controller
                 'manufacturer_id' => $request->input('manufacturer_id'),
                 'status' => 'MS',
             ]);
+            
+            broadcast(new ManufacturerNotificationEvent (
+                $request->input('manufacturer_id') ,[
+                'title' => 'Yeni Sipariş',
+                'body' => 'Yeni bir sipariş isteği var teklifi incele',
+                'order' => $order->toArray(),
+            ]));
 
             return response()->json(['message' => 'Üretici seçimi yapıldı.'], 200);
         }
@@ -179,6 +237,12 @@ class OrderManageController extends Controller
                 'status' => 'MA',
             ]);
 
+            broadcast(new AdminNotificationEvent([
+                'title' => 'Sipariş onayı',
+                'body' => 'Sipariş üretici tarafından onaylandı.',
+                'order' => $order->toArray(),
+            ]));
+        
             return response()->json(['message' => 'Üretici onayı yapıldı.'], 200);
         }
 
@@ -203,6 +267,20 @@ class OrderManageController extends Controller
         if ($order->status === 'Üretici Onayı') {
             // Sipariş durumunu 'PP' (Üretimde) olarak güncelle
             $order->update(['status' => 'PP']); 
+                
+            // Üreticiye bildirim gönder
+            event(new CustomerNotificationEvent($order->customer_id ,[
+                'title' => 'Üretim Süreci Başlatıldı',
+                'body' => 'Sipariş numarası ' . $order->order_code . ' için üretim süreci başlatıldı.',
+                'order' => $order,
+            ]));
+
+            // Üreticiye bildirim gönder
+            event(new AdminNotificationEvent([
+                'title' => 'Üretim Süreci Başlatıldı',
+                'body' => 'Sipariş numarası ' . $order->order_code . ' için üretim süreci başlatıldı.',
+                'order' => $order->toArray(),
+            ]));
 
             return response()->json(['message' => 'Üretim süreci başlatıldı.'], 200);
         }   
@@ -221,7 +299,13 @@ class OrderManageController extends Controller
             // Gelen resim dosyasını kontrol et
             $request->validate([
                 'product_ready_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'product_ready_image.required' => 'Ürün hazır resmi gereklidir.',
+                'product_ready_image.image' => 'Dosya bir resim olmalıdır.',
+                'product_ready_image.mimes' => 'Dosya formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'product_ready_image.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
+
         
             // Resim dosyasını yükle ve bilgileri al
             $image = $request->file('product_ready_image');
@@ -241,6 +325,20 @@ class OrderManageController extends Controller
             // Sipariş durumunu 'PR' (Product Ready) olarak güncelle
             $order->update(['status' => 'PR']);
         
+            // Üreticiye bildirim gönder
+            event(new CustomerNotificationEvent($order->customer_id ,[
+                'title' => 'Üretim Süreci Başlatıldı',
+                'body' => 'Sipariş numarası ' . $order->order_code . ' için ürün hazır hale getirildi.',
+                'order' => $order->toArray(),
+            ]));
+
+            // Üreticiye bildirim gönder
+            event(new AdminNotificationEvent([
+                'title' => 'Ürün Hazır',
+                'body' => 'Sipariş numarası' . $order->order_code . ' için ürün hazır hale getirildi.',
+                'order' => $order->toArray(),
+            ]));            
+
             return response()->json(['message' => 'Ürün hazırlandı ve kaydedildi.'], 200);
         }
 
@@ -258,6 +356,11 @@ class OrderManageController extends Controller
             // Gelen resim dosyasını kontrol et
             $request->validate([
                 'product_in_transition_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'product_in_transition_image.required' => 'Ürün geçiş resmi gereklidir.',
+                'product_in_transition_image.image' => 'Dosya bir resim olmalıdır.',
+                'product_in_transition_image.mimes' => 'Dosya formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'product_in_transition_image.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
         
             // Resim dosyasını yükle ve bilgileri al
@@ -277,7 +380,14 @@ class OrderManageController extends Controller
         
             // Sipariş durumunu 'PIT' (Product in Transition) olarak güncelle
             $order->update(['status' => 'PIT']);
-        
+
+            // Üreticiye bildirim gönder
+            event(new CustomerNotificationEvent($order->customer_id ,[
+                'title' => 'Ürün Kargoda',
+                'body' => 'Sipariş numarası ' . $order->order_code . ' için ürün kargo aşamasına alındı.',
+                'order' => $order->toArray(),
+            ]));
+
             return response()->json(['message' => 'Ürün geçiş aşamasında ve resim eklendi.'], 200);
         }
 
@@ -295,6 +405,13 @@ class OrderManageController extends Controller
             // Sipariş durumunu 'PD' (Product Delivered) olarak güncelle
             $order->update(['status' => 'PD']); 
 
+            // Üreticiye bildirim gönder
+            event(new CustomerNotificationEvent($order->customer_id ,[
+                'title' => 'Sipariş Teslim Edildi',
+                'body' => 'Sipariş numarası ' . $order->order_code . ' teslim edildi.',
+                'order' => $order->toArray(),
+            ]));
+
             return response()->json(['message' => 'Ürün teslim edildi.'], 200);
         }   
 
@@ -302,42 +419,43 @@ class OrderManageController extends Controller
     }
 
     /**
-     * Kullanıcıya bildirim gönder ve veritabanına kaydet.
-     *
-     * @param  \App\Models\User  $user
-     * @param  array  $message
-     * @return void
+     * Fatura ekler ve müşteriye bildirim gönderir.
+     * ? admin rotası
      */
-    private function notifyUser(User $user, array $message)
+    public function addInvoice(Request $request, Order $order)
     {
-        // Bildirimi yayınla (kullanıcıya özel, diğer kullanıcılara değil)
-        broadcast(new UserNotificationEvent($user, $message))->toOthers();
+        // Gelen fatura dosyasını kontrol et
+        $request->validate([
+            'invoice_file' => 'required|mimes:pdf|max:2048',
+        ], [
+            'invoice_file.required' => 'Fatura dosyası gereklidir.',
+            'invoice_file.mimes' => 'Dosya formatı sadece PDF olmalıdır.',
+            'invoice_file.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
+        ]);
     
-        // Bildirim verisini veritabanına kaydet
-        UserNotification::create([
-            'user_id' => $user->id,
-            'message' => json_encode($message), // JSON formatına çevirerek kaydet
-            'is_read' => false,
+        // Fatura dosyasını yükle ve bilgileri al
+        $invoiceFile = $request->file('invoice_file');
+        $invoiceFileName = 'invoice_' . $order->id . '.' . $invoiceFile->getClientOriginalExtension();
+        $invoicePath = $invoiceFile->storeAs('public/invoices', $invoiceFileName);
+    
+        // Fatura bilgilerini OrderImage modeline kaydet
+        $orderImage = new OrderImage([
+            'type' => 'I', // Fatura tipi
+            'image_url' => asset(Storage::url($invoicePath)),
+            'path' => $invoicePath,
+            'order_id' => $order->id,
         ]);
-    }
+    
+        $order->orderImages()->save($orderImage);
 
-    /**
-     * Admin bildirimi gönder ve veritabanına kaydet.
-     *
-     * @param  \App\Models\AdminNotification  $admin
-     * @param  array  $message
-     * @return void
-     */
-    private function notifyAdmin( array $message)
-    {
-        // Bildirimi yayınla (herkese açık kanala)
-        broadcast(new AdminNotificationEvent( $message));
-
-        // Bildirim verisini veritabanına kaydet
-        AdminNotification::create([
-            'message' => json_encode($message),
-            'is_read' => false,
-        ]);
+        // Müşteriye bildirim gönder
+        event(new CustomerNotificationEvent($order->customer_id,[
+            'title' => 'Fatura Eklendi',
+            'body' => 'Sipariş numaranız ' . $order->id . ' için fatura eklendi.',
+            'order' => $order->toArray(),
+        ]));
+    
+        return response()->json(['message' => 'Fatura eklendi ve müşteriye bildirim gönderildi.'], 200);
     }
 
 

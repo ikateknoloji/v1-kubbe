@@ -2,7 +2,7 @@
 
 namespace App\Events;
 
-use App\Models\AdminNotification;
+use App\Models\UserNotification;
 use Illuminate\Broadcasting\Channel;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Broadcasting\PresenceChannel;
@@ -11,26 +11,25 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class AdminNotificationEvent implements ShouldBroadcast
+class ManufacturerNotificationEvent
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
-
+    public $manufacturer_id;
     public $message;
-
+    
     /**
      * Create a new event instance.
-     *
-     * @return void
      */
-    public function __construct( array $message)
+    public function __construct($manufacturer_id, array $message)
     {
+        $this->manufacturer_id = $manufacturer_id;
         $this->message = $message;
 
-        // Veritabanına admin bildirimini kaydet
-        AdminNotification::create([
-            'message' => json_encode($this->message),
-            'is_read' => false,
+        // Veritabanına üretici bildirimini kaydet
+        UserNotification::create([
+            'user_id' => $this->manufacturer_id,
+            'message' => $this->message,
         ]);
     }
 
@@ -42,7 +41,7 @@ class AdminNotificationEvent implements ShouldBroadcast
     public function broadcastOn(): array
     {
         return [
-            new Channel('admin-notifications'),
+            new PrivateChannel('user.' . $this->manufacturer_id),
         ];
     }
 }

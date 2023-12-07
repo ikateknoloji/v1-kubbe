@@ -27,9 +27,9 @@ class ManufacturerController extends Controller
 
             // Başarılı yanıtı döndür
             return response()->json($manufacturerInfo, 200);
-        } catch (\Exception $e) {
-            // Hata durumunda hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. ' . $e], 500);
+        }  catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -58,6 +58,20 @@ class ManufacturerController extends Controller
                 'district' => 'required|string',
                 'country' => 'required|string',
                 'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'name.required' => 'Ad alanı gereklidir.',
+                'surname.required' => 'Soyad alanı gereklidir.',
+                'phone.required' => 'Telefon alanı gereklidir.',
+                'tax_number.required' => 'Vergi numarası alanı gereklidir.',
+                'tax_office.required' => 'Vergi dairesi alanı gereklidir.',
+                'company_name.required' => 'Şirket adı alanı gereklidir.',
+                'address.required' => 'Adres alanı gereklidir.',
+                'city.required' => 'Şehir alanı gereklidir.',
+                'district.required' => 'İlçe alanı gereklidir.',
+                'country.required' => 'Ülke alanı gereklidir.',
+                'image_url.image' => 'Geçerli bir resim dosyası yükleyin.',
+                'image_url.mimes' => 'Resim dosyası formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'image_url.max' => 'Resim dosyası 2048 KB boyutundan büyük olmamalıdır.',
             ]);
 
             // Giriş yapmış kullanıcının ID'sini verilere ekle
@@ -80,12 +94,9 @@ class ManufacturerController extends Controller
 
             // Başarılı yanıtı döndür
             return response()->json(['message' => 'Üretici başarıyla oluşturuldu', 'manufacturer' => $manufacturer], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda rollback yap
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. ' . $e], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -127,6 +138,21 @@ class ManufacturerController extends Controller
                 'city' => 'required|string',
                 'district' => 'required|string',
                 'country' => 'required|string',
+                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            ], [
+                'name.required' => 'Ad alanı gereklidir.',
+                'surname.required' => 'Soyad alanı gereklidir.',
+                'phone.required' => 'Telefon alanı gereklidir.',
+                'tax_number.required' => 'Vergi numarası alanı gereklidir.',
+                'tax_office.required' => 'Vergi dairesi alanı gereklidir.',
+                'company_name.required' => 'Şirket adı alanı gereklidir.',
+                'address.required' => 'Adres alanı gereklidir.',
+                'city.required' => 'Şehir alanı gereklidir.',
+                'district.required' => 'İlçe alanı gereklidir.',
+                'country.required' => 'Ülke alanı gereklidir.',
+                'image_url.image' => 'Geçerli bir resim dosyası yükleyin.',
+                'image_url.mimes' => 'Resim dosyası formatı jpeg, png, jpg, gif veya svg olmalıdır.',
+                'image_url.max' => 'Resim dosyası 2048 KB boyutundan büyük olmamalıdır.',
             ]);
     
             // Üretici bilgilerini güncelle
@@ -137,12 +163,10 @@ class ManufacturerController extends Controller
     
             // Başarılı yanıtı döndür
             return response()->json(['message' => 'Üretici başarıyla güncellendi', 'manufacturer' => $manufacturer], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda rollback yap
+
+        }  catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-    
-            // Hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. ' . $e], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -194,9 +218,10 @@ class ManufacturerController extends Controller
             DB::beginTransaction();
 
             if ($request->hasFile('image_url')) {
+
                 // Gelen istek verilerini doğrula
                 $validatedData = $request->validate([
-                    'image_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'image_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
                 ]);
 
                 // Eski resmi sil
@@ -221,12 +246,9 @@ class ManufacturerController extends Controller
 
             // Başarılı yanıtı döndür
             return response()->json(['message' => 'Üretici resmi başarıyla güncellendi', 'manufacturer' => $manufacturer], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda rollback yap
+        }  catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtını döndür
-            return response()->json(['error' => 'İstek işlenirken bir hata oluştu. ' . $e], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 

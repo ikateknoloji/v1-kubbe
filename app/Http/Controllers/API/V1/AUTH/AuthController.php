@@ -48,6 +48,16 @@ class AuthController extends Controller
         $validatedData = $request->validate([
             'email' => 'required|string|email|max:255|unique:users',
             'password' => 'required|string|min:8|confirmed',
+        ], [
+            'email.required' => 'E-posta adresi gereklidir.',
+            'email.string' => 'E-posta adresi bir metin olmalıdır.',
+            'email.email' => 'Geçerli bir e-posta adresi girilmelidir.',
+            'email.max' => 'E-posta adresi en fazla :max karakter uzunluğunda olmalıdır.',
+            'email.unique' => 'Bu e-posta adresi zaten kullanılmaktadır.',
+            'password.required' => 'Şifre gereklidir.',
+            'password.string' => 'Şifre bir metin olmalıdır.',
+            'password.min' => 'Şifre en az :min karakter uzunluğunda olmalıdır.',
+            'password.confirmed' => 'Şifre doğrulama eşleşmiyor.',
         ]);
 
         // Yeni bir User nesnesi oluşturuluyor ve veritabanına kaydediliyor
@@ -72,6 +82,14 @@ class AuthController extends Controller
             $validatedData = $request->validate([
                 'email' => 'required|string|email|max:255|unique:users',
                 'user_type' => 'required|in:manufacturer,customer',
+            ], [
+                'email.required' => 'E-posta adresi gereklidir.',
+                'email.string' => 'E-posta adresi bir metin olmalıdır.',
+                'email.email' => 'Geçerli bir e-posta adresi girilmelidir.',
+                'email.max' => 'E-posta adresi en fazla :max karakter uzunluğunda olmalıdır.',
+                'email.unique' => 'Bu e-posta adresi zaten kullanılmaktadır.',
+                'user_type.required' => 'Kullanıcı tipi gereklidir.',
+                'user_type.in' => 'Geçerli bir kullanıcı tipi seçmelisiniz (manufacturer veya customer).',
             ]);
     
             // Rastgele bir geçici şifre oluşturuluyor
@@ -92,9 +110,10 @@ class AuthController extends Controller
     
             // Başarılı bir şekilde oluşturulduğuna dair bir mesaj döndür
             return response()->json(['message' => ucfirst($validatedData['user_type']) . ' kullanıcısı başarıyla oluşturuldu!'], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda geri alma işlemi yapılır
-            return response()->json(['error' => 'Kullanıcı oluşturma işlemi sırasında bir hata oluştu.'], 500);
+
+        }  catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
     

@@ -22,14 +22,20 @@ class ProductCategoryController extends Controller
      * Yeni bir kategori oluşturur ve kaydeder.
      */
     public function store(Request $request)
-    {
-        // Gelen verileri doğrulama
-        $request->validate([
-            'category' => 'required|unique:product_categories,category',
-            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
-        ]);
-    
+    {    
         try {
+
+            // Gelen verileri doğrulama
+            $request->validate([
+                'category' => 'required|unique:product_categories,category',
+                'image_url' => 'required|mimes:jpg,jpeg,png,gif',
+            ], [
+                'category.required' => 'Kategori alanı gereklidir.',
+                'category.unique' => 'Bu kategori adı zaten kullanılmaktadır.',
+                'image_url.required' => 'Resim dosyası gereklidir.',
+                'image_url.mimes' => 'Resim dosyası formatı jpg, jpeg, png veya gif olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
     
@@ -53,12 +59,9 @@ class ProductCategoryController extends Controller
     
             // Başarılı oluşturma yanıtı
             return response()->json(['category' => $category], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-    
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
     
@@ -84,12 +87,15 @@ class ProductCategoryController extends Controller
      */
     public function update(Request $request, ProductCategory $productCategory)
     {
-        // Gelen verileri doğrulama
-        $request->validate([
-            'category' => 'required|unique:product_categories,category,' . $productCategory->id,
-        ]);
-
         try {
+            // Gelen verileri doğrulama
+            $request->validate([
+                'category' => 'required|unique:product_categories,category,' . $productCategory->id,
+            ], [
+                'category.required' => 'Kategori alanı gereklidir.',
+                'category.unique' => 'Bu kategori adı zaten kullanılmaktadır.',
+            ]);
+
             // Kategoriyi güncelle, sadece "category" alanını kullan
             $productCategory->update([
                 'category' => $request->input('category'),
@@ -97,9 +103,9 @@ class ProductCategoryController extends Controller
 
             // Başarılı güncelleme yanıtı
             return response()->json(['category' => $productCategory], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda uygun bir hata yanıtı döndür
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -140,12 +146,16 @@ class ProductCategoryController extends Controller
      */
     public function updateImage(Request $request, ProductCategory $productCategory)
     {
-        // Gelen verileri doğrulama
-        $request->validate([
-            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
-        ]);
 
         try {
+            // Gelen verileri doğrulama
+            $request->validate([
+                'image_url' => 'required|mimes:jpg,jpeg,png,gif',
+            ], [
+                'image_url.required' => 'Resim dosyası gereklidir.',
+                'image_url.mimes' => 'Resim dosyası formatı jpg, jpeg, png veya gif olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
 
@@ -170,12 +180,9 @@ class ProductCategoryController extends Controller
 
             // Başarılı güncelleme yanıtı
             return response()->json(['category' => $productCategory], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 

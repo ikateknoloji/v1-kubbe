@@ -16,12 +16,9 @@ class ProductTypeController extends Controller
      */
     public function index()
     {
-        try {
             $productTypes = ProductType::all();
             return response()->json(['productTypes' => $productTypes], 200);
-        } catch (\Exception $e) {
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
-        }
+
     }
 
     /**
@@ -29,14 +26,22 @@ class ProductTypeController extends Controller
      */
     public function store(Request $request)
     {
-        // Gelen verileri doğrulama
-        $request->validate([
-            'product_type' => 'required|unique:product_types,product_type',
-            'product_category_id' => 'required|exists:product_categories,id',
-            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
-        ]);
-
         try {
+            
+            // Gelen verileri doğrulama
+            $request->validate([
+                'product_type' => 'required|unique:product_types,product_type',
+                'product_category_id' => 'required|exists:product_categories,id',
+                'image_url' => 'required|mimes:jpg,jpeg,png,gif',
+            ], [
+                'product_type.required' => 'Ürün tipi alanı gereklidir.',
+                'product_type.unique' => 'Bu ürün tipi zaten kullanılmaktadır.',
+                'product_category_id.required' => 'Ürün kategori ID alanı gereklidir.',
+                'product_category_id.exists' => 'Geçerli bir ürün kategori ID seçmelisiniz.',
+                'image_url.required' => 'Resim dosyası gereklidir.',
+                'image_url.mimes' => 'Resim dosyası formatı jpg, jpeg, png veya gif olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
 
@@ -54,12 +59,9 @@ class ProductTypeController extends Controller
 
             // Başarılı oluşturma yanıtı
             return response()->json(['productType' => $productType], 201);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -82,14 +84,20 @@ class ProductTypeController extends Controller
      */
     public function update(Request $request, ProductType $productType)
     {
-        // Gelen verileri doğrulama
-        $request->validate([
-            'product_type' => 'required|unique:product_types,product_type,' . $productType->id,
-            'product_category_id' => 'required|exists:product_categories,id',
-            'image_url' => 'url',
-        ]);
-
         try {
+            // Gelen verileri doğrulama
+            $request->validate([
+                'product_type' => 'required|unique:product_types,product_type,' . $productType->id,
+                'product_category_id' => 'required|exists:product_categories,id',
+                'image_url' => 'url',
+            ], [
+                'product_type.required' => 'Ürün tipi alanı gereklidir.',
+                'product_type.unique' => 'Bu ürün tipi zaten kullanılmaktadır.',
+                'product_category_id.required' => 'Ürün kategori ID alanı gereklidir.',
+                'product_category_id.exists' => 'Geçerli bir ürün kategori ID seçmelisiniz.',
+                'image_url.url' => 'Geçerli bir URL adresi girilmelidir.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
 
@@ -104,12 +112,10 @@ class ProductTypeController extends Controller
 
             // Başarılı güncelleme yanıtı
             return response()->json(['productType' => $productType], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
-            DB::rollback();
 
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            DB::rollback();
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 
@@ -147,12 +153,15 @@ class ProductTypeController extends Controller
      */
     public function updateImage(Request $request, ProductType $productType)
     {
-        // Gelen verileri doğrulama
-        $request->validate([
-            'image_url' => 'required|mimes:jpg,jpeg,png,gif',
-        ]);
-
         try {
+            // Gelen verileri doğrulama
+            $request->validate([
+                'image_url' => 'required|mimes:jpg,jpeg,png,gif',
+            ], [
+                'image_url.required' => 'Resim dosyası gereklidir.',
+                'image_url.mimes' => 'Resim dosyası formatı jpg, jpeg, png veya gif olmalıdır.',
+            ]);
+
             // Transaksiyon başlat
             DB::beginTransaction();
 
@@ -167,12 +176,9 @@ class ProductTypeController extends Controller
 
             // Başarılı güncelleme yanıtı
             return response()->json(['productType' => $productType], 200);
-        } catch (\Exception $e) {
-            // Hata durumunda transaksiyonu geri al
+        } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
-
-            // Hata yanıtı
-            return response()->json(['error' => 'İşlem sırasında bir hata oluştu.'], 500);
+            return response()->json(['errors' => $e->errors()], 422);
         }
     }
 

@@ -55,11 +55,19 @@ class PasswordResetController extends Controller
     public function resetPasswordWithTempPassword(Request $request)
     {
              // Gelen verileri doğrula
-         $request->validate([
-             'email' => 'required|email',
-             'temp_password' => 'required',
-             'new_password' => 'required|min:8|confirmed',
-         ]);
+             $request->validate([
+                'email' => 'required|email',
+                'temp_password' => 'required',
+                'new_password' => 'required|min:8|confirmed',
+            ], [
+                'email.required' => 'E-posta adresi gereklidir.',
+                'email.email' => 'Geçerli bir e-posta adresi girilmelidir.',
+                'temp_password.required' => 'Geçici şifre gereklidir.',
+                'new_password.required' => 'Yeni şifre gereklidir.',
+                'new_password.min' => 'Yeni şifre en az :min karakter uzunluğunda olmalıdır.',
+                'new_password.confirmed' => 'Yeni şifre doğrulama eşleşmiyor.',
+            ]);
+            
      
          // E-posta adresine göre kullanıcıyı bul
          $user = User::where('email', $request->email)->first();
@@ -92,6 +100,11 @@ class PasswordResetController extends Controller
         $request->validate([
             'current_password' => 'required',
             'new_password' => 'required|min:8|confirmed',
+        ], [
+            'current_password.required' => 'Mevcut şifre gereklidir.',
+            'new_password.required' => 'Yeni şifre gereklidir.',
+            'new_password.min' => 'Yeni şifre en az :min karakter uzunluğunda olmalıdır.',
+            'new_password.confirmed' => 'Yeni şifre doğrulama eşleşmiyor.',
         ]);
     
         // Laravel Sanctum ile oturum açan kullanıcıyı alır
