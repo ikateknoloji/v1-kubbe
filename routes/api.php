@@ -35,6 +35,7 @@ use App\Http\Middleware\UserPermission;
 
 // routes/web.php
 
+Route::get('/download-image/{imageId}', [GetOrderController::class, 'downloadImage']);
 
 
 /**
@@ -143,8 +144,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
          */
         Route::prefix('admin')->group(function () {
           Route::get('orders/active', [GetOrderController::class, 'getActiveOrders']);
-          Route::get('orders/{status}', [GetOrderController::class, 'getOrdersByStatus']);
-          Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
+          Route::get('orders/active/{status}', [GetOrderController::class, 'getOrdersByStatus']);
+          Route::get('orders-item/active/{id}', [GetOrderController::class, 'getOrderById']);
         });
 
 
@@ -361,4 +362,5 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/manage/orders/{id}', [GetOrderController::class, 'getOrderById']);
 
 });
+
 

@@ -23,7 +23,7 @@ class OrderImageFactory extends Factory
         return [
             'order_id' => Order::factory(),
             'type' => 'L',
-            'image_url' => $this->faker->imageUrl(),
+            'image_url' => "http://127.0.0.1:8000/storage/images/image.png",
             'path' => $this->faker->word,
         ];
     }

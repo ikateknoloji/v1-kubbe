@@ -20,6 +20,11 @@ class PasswordResetController extends Controller
     public function resetPassword(Request $request)
     {
         // E-posta adresini doğrula
+        $request->validate([
+            'email' => 'required|email|exists:users,email'
+        ]);
+
+        // E-posta adresini doğrula
         $request->validate(['email' => 'required|email']);
     
         // E-posta adresine göre kullanıcıyı bul

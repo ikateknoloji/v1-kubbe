@@ -21,7 +21,7 @@ class ProductCategoryFactory extends Factory
     {
         return [
             'category' =>  $this->faker->unique()->word,
-            'image_url' => $this->faker->imageUrl(),
+            'image_url' => "http://127.0.0.1:8000/storage/images/image.png",
             'path' => $this->faker->word,
         ];
     }
