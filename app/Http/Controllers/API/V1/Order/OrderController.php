@@ -94,12 +94,16 @@ class OrderController extends Controller
 
                 $path = $image->storeAs('public/images/orders', $imageName);
             
+                // MIME tipini al
+                $mime_type = $image->getClientMimeType();
+
                 // OrderImage modeline order_id'yi ekleyerek kaydet
                 $orderImage = new OrderImage([
                     'type' => 'L', // Logo tipi
                     'image_url' => asset(Storage::url($path)),
                     'path' => $path,
                     'order_id' => $order->id,
+                    'mime_type' => $mime_type, // MIME tipini kaydet
                 ]);
             
                 $order->orderImages()->save($orderImage);

@@ -52,12 +52,16 @@ class OrderImageController extends Controller
             $imageName =  $validatedData['type'] . $validatedData['order_id'] . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('public/images/orders', $imageName);
         
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+
             // Yeni sipariş resmi oluştur
             $orderImage = OrderImage::create([
                 'order_id' => $validatedData['order_id'],
                 'type' => $validatedData['type'],
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
+                'mime_type' => $mime_type, // MIME tipini kaydet
             ]);
 
             // Event'i hemen broadcast et
@@ -153,10 +157,14 @@ public function updateImage(Request $request, OrderImage $orderImage)
             $imageName = $orderImage->type . $orderImage->order_id . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('public/images/orders', $imageName);
 
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+
             // OrderImage bilgilerini güncelle
             $orderImage->update([
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
+                'mime_type' => $mime_type, // MIME tipini güncelle
             ]);
         }
 

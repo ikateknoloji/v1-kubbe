@@ -74,14 +74,18 @@ class OrderManageController extends Controller
                 $imageName = 'design_' . $order->id . '.' . $image->getClientOriginalExtension();
                 $path = $image->storeAs('public/images/designs', $imageName);
             
+                // MIME tipini al
+                $mime_type = $image->getClientMimeType();
+                
                 // OrderImage modeline order_id'yi ekleyerek kaydet
                 $orderImage = new OrderImage([
                 'type' => 'D', // Tasarım tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
+                'mime_type' => $mime_type, // MIME tipini kaydet
                 'order_id' => $order->id,
                 ]);
-            
+
                 $order->orderImages()->save($orderImage);
             
                 // Sipariş durumunu 'DA' (Onay) olarak güncelle
@@ -132,12 +136,16 @@ class OrderManageController extends Controller
             $imageName = 'payment_' . $order->id . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('public/images/payments', $imageName);
 
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+
             // OrderImage modeline order_id'yi ekleyerek kaydet
             $orderImage = new OrderImage([
                 'type' => 'P', // Ödeme tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
-                'order_id' => $order->id, // toArray() kullanılmasına gerek yok
+                'mime_type' => $mime_type, // MIME tipini kaydet
+                'order_id' => $order->id,
             ]);
 
             $order->orderImages()->save($orderImage);
@@ -300,7 +308,7 @@ class OrderManageController extends Controller
         if ($order->status === 'Üretimde') {
             // Gelen resim dosyasını kontrol et
             $request->validate([
-                'product_ready_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'product_ready_image' => 'required|file|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ], [
                 'product_ready_image.required' => 'Ürün hazır resmi gereklidir.',
                 'product_ready_image.image' => 'Dosya bir resim olmalıdır.',
@@ -314,14 +322,18 @@ class OrderManageController extends Controller
             $imageName = 'product_ready_' . $order->id . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('public/images/product_ready', $imageName);
         
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+            
             // OrderImage modeline order_id'yi ekleyerek kaydet
             $orderImage = new OrderImage([
                 'type' => 'PR', // Product Ready tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
+                'mime_type' => $mime_type, // MIME tipini kaydet
                 'order_id' => $order->id,
             ]);
-        
+
             $order->orderImages()->save($orderImage);
         
             // Sipariş durumunu 'PR' (Product Ready) olarak güncelle
@@ -370,11 +382,15 @@ class OrderManageController extends Controller
             $imageName = 'product_in_transition_' . $order->id . '.' . $image->getClientOriginalExtension();
             $path = $image->storeAs('public/images/product_in_transition', $imageName);
         
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+            
             // OrderImage modeline order_id'yi ekleyerek kaydet
             $orderImage = new OrderImage([
                 'type' => 'SC', // Product in Transition tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
+                'mime_type' => $mime_type, // MIME tipini kaydet
                 'order_id' => $order->id,
             ]);
         
@@ -440,11 +456,15 @@ class OrderManageController extends Controller
         $invoiceFileName = 'invoice_' . $order->id . '.' . $invoiceFile->getClientOriginalExtension();
         $invoicePath = $invoiceFile->storeAs('public/invoices', $invoiceFileName);
     
+        // MIME tipini al
+        $mime_type = $invoiceFile->getClientMimeType();
+        
         // Fatura bilgilerini OrderImage modeline kaydet
         $orderImage = new OrderImage([
             'type' => 'I', // Fatura tipi
             'image_url' => asset(Storage::url($invoicePath)),
             'path' => $invoicePath,
+            'mime_type' => $mime_type, // MIME tipini kaydet
             'order_id' => $order->id,
         ]);
     

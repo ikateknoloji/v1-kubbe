@@ -134,6 +134,7 @@ class GetOrderController extends Controller
                         'type' => $image->type,
                         'image_url' => $image->image_url,
                         'path' => $image->path,
+                        'mime_type' => $image->mime_type,
                         'created_at' => $image->created_at,
                         'updated_at' => $image->updated_at,
                     ];

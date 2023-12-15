@@ -14,6 +14,7 @@ class OrderImage extends Model
         'type',
         'image_url',
         'path',
+        'mime_type'
     ];
 
     public function order()
