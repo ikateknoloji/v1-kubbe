@@ -207,24 +207,28 @@ class GetOrderController extends Controller
     */
     public function downloadImage($imageId)
     {
-        // Veritabanından ilgili imageId'ye sahip dosya bilgisini al
-        $orderImage = OrderImage::findOrFail($imageId);
-    
-        // Dosyanın yolunu oluştur
-        $pathToFile = storage_path('app/' . $orderImage->path);
-    
-        // Dosyanın gerçek medya türünü belirle
-        $finfo = finfo_open(FILEINFO_MIME_TYPE);
-        $contentType = finfo_file($finfo, $pathToFile);
-        finfo_close($finfo);
-    
-        // Dosya adını belirle (orijinal adıyla)
-        $fileName = pathinfo($pathToFile)['basename'];
-    
-        // Dosyayı tarayıcıya gönder
-        return response()->file($pathToFile, [
-            'Content-Type' => $contentType, 
-            'Content-Disposition' => 'attachment; filename="'.$fileName.'"'
-        ]);
+    // Veritabanından ilgili imageId'ye sahip dosya bilgisini al
+    $orderImage = OrderImage::findOrFail($imageId);
+
+    // Dosyanın orijinal adını ve yolumu al
+    $originalFileName = $orderImage->path;
+    $originalFilePath = storage_path('app/' . $orderImage->path);
+
+    // Eğer orijinal dosya adı ve yolu mevcut değilse, hata ver
+    if (!$originalFileName || !file_exists($originalFilePath)) {
+        abort(404, 'Orijinal dosya bulunamadı.');
+    }
+
+    // Dosyanın gerçek medya türünü belirle
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $contentType = finfo_file($finfo, $originalFilePath);
+    finfo_close($finfo);
+
+
+    // API yanıtında MIME türünü ve dosya adını gönder
+    return response()->file($originalFilePath, [
+        'Content-Type' => $contentType,
+        'Content-Disposition' => 'attachment; filename="'.$originalFileName.'"'
+    ]);
     }
 }

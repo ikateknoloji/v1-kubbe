@@ -17,6 +17,7 @@ return new class extends Migration
             $table->enum('type', ['L', 'D', 'P', 'I', 'PR', 'SC']);
             $table->string('image_url');
             $table->string('path');
+            $table->string('mime_type');  // Yeni eklenen sütun
             $table->timestamps();
             
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');

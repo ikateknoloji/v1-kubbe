@@ -127,59 +127,58 @@ class OrderImageController extends Controller
         }
     }
 
-    /**
-     * Update the image of the specified resource.
-     */
-    public function updateImage(Request $request, OrderImage $orderImage)
-    {
-        // Gelen verileri doğrula
-        try {
+/**
+ * Update the image of the specified resource.
+ */
+public function updateImage(Request $request, OrderImage $orderImage)
+{
+    try {
+        $request->validate([
+            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048',
+        ], [
+            'image_url.image' => 'Geçersiz resim formatı.',
+            'image_url.mimes' => 'Geçersiz resim MIME türü.',
+            'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
+        ]);
 
-            $request->validate([
-                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            ],[
-             'image_url.image' => 'Geçersiz resim formatı.',
-             'image_url.mimes' => 'Geçersiz resim MIME türü.',
-             'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
+        // Transaksiyon başlat
+        DB::beginTransaction();
+
+        // Eski resmi sil
+        Storage::disk('public')->delete($orderImage->path);
+
+        // Yeni resmi kaydet (eğer varsa)
+        if ($request->hasFile('image_url')) {
+            $image = $request->file('image_url');
+            $imageName = $orderImage->type . $orderImage->order_id . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('public/images/orders', $imageName);
+
+            // OrderImage bilgilerini güncelle
+            $orderImage->update([
+                'image_url' => asset(Storage::url($path)),
+                'path' => $path,
             ]);
-
-            // Transaksiyon başlat
-            DB::beginTransaction();
-
-            // Eski resmi sil
-            Storage::disk('public')->delete($orderImage->path);
-
-            // Yeni resmi kaydet (eğer varsa)
-            if ($request->hasFile('image_url')) {
-                $image = $request->file('image_url');
-                $imageName = $orderImage->type .  $orderImage->order_id . '.' . $image->getClientOriginalExtension();
-                $path = $image->storeAs('public/images/orders', $imageName);
-
-                // OrderImage bilgilerini güncelle
-                $orderImage->update([
-                    'image_url' => asset(Storage::url($path)),
-                    'path' => $path,
-                ]);
-            }
-
-            // Event'i hemen broadcast et
-            broadcast(new OrderStatusChangedEvent($orderImage->order, [
-                'title' => 'Resim dosyası güncellendi',
-                'body' => 'İlgili siparişin resmi güncellendi.',
-                'order' =>  $orderImage->order,
-            ]));
-
-            // Transaksiyonu tamamla
-            DB::commit();
-
-            // Başarılı güncelleme yanıtı
-            return response()->json(['order_image' => $orderImage], 200);
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollback();
-            return response()->json(['errors' => $e->errors()], 422);
         }
+
+        // Event'i hemen broadcast et
+        broadcast(new OrderStatusChangedEvent($orderImage->order, [
+            'title' => 'Resim dosyası güncellendi',
+            'body' => 'İlgili siparişin resmi güncellendi.',
+            'order' =>  $orderImage->order,
+        ]));
+
+        // Transaksiyonu tamamla
+        DB::commit();
+
+        // Başarılı güncelleme yanıtı
+        return response()->json(['message' => 'Resim dosyası güncellendi', 'order_image' => $orderImage], 200);
+
+    } catch (\Illuminate\Validation\ValidationException $e) {
+        DB::rollback();
+        return response()->json(['errors' => $e->errors()], 422);
     }
+}
+
 
 
 }

@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Order;
 use App\Models\OrderImage;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\OrderImage>
@@ -20,11 +21,16 @@ class OrderImageFactory extends Factory
      */
     public function definition(): array
     {
+        $isImage = $this->faker->boolean; // Rastgele bir boolean değer oluşturur
+        $filePath = $isImage ? 'public/images/image.png' : 'public/images/bill.pdf'; // Dosya türüne göre dosya yolu seçer
+        $mimeType = $isImage ? 'image/png' : 'application/pdf'; // Dosya türüne göre MIME türünü seçer
+
         return [
             'order_id' => Order::factory(),
             'type' => 'L',
-            'image_url' => "http://127.0.0.1:8000/storage/images/image.png",
-            'path' => $this->faker->word,
+            'image_url' => asset(Storage::url($filePath)),
+            'path' => $filePath,
+            'mime_type' => $mimeType, // Yeni eklenen sütun
         ];
     }
 }

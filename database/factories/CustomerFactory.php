@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Customer;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Customer>
@@ -22,6 +23,8 @@ class CustomerFactory extends Factory
     public function definition(): array
     {
 
+        $imagePath = 'public/images/image.png'; // Buradaki dosya yolu ve adını güncelleyin
+
         return [
             'user_id' => User::factory(),
             'name' => $this->faker->firstName,
@@ -34,8 +37,8 @@ class CustomerFactory extends Factory
             'city' => $this->faker->city,
             'district' => $this->faker->word,
             'country' => $this->faker->country,
-            'image_url' => "http://127.0.0.1:8000/storage/images/image.png",
-            'path' => $this->faker->word,
+            'image_url' => asset(Storage::url($imagePath)),
+            'path' => $imagePath,
         ];
     }
 }

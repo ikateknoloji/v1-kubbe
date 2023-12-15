@@ -15,7 +15,9 @@ use App\Http\Controllers\API\V1\USER\CustomerController;
 use App\Http\Controllers\API\V1\USER\ManufacturerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Middleware\UserPermission;
+use Intervention\Image\Facades\Image;
+use Illuminate\Support\Facades\Storage;
+use Spatie\PdfToImage\Pdf;
 
 
 /*
@@ -28,8 +30,6 @@ use App\Http\Middleware\UserPermission;
 | be assigned to the "api" middleware group. Make something great!
 |
 */
-
-
 
 
 
@@ -78,6 +78,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::apiResource('order-items', OrderItemController::class);
     // OrderImageController Rotaları
     Route::apiResource('order-images', OrderImageController::class);
+    Route::post('/update-image/{orderImage}', [OrderImageController::class, 'updateImage']);
 
 
 
@@ -362,5 +363,4 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/manage/orders/{id}', [GetOrderController::class, 'getOrderById']);
 
 });
-
 

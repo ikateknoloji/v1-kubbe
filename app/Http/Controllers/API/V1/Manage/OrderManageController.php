@@ -57,7 +57,7 @@ class OrderManageController extends Controller
 
             // Gelen resim dosyasını kontrol et
             $request->validate([
-                'design_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'design_image' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048',
             ], [
                 'design_image.required' => 'Lütfen bir tasarım resmi yükleyin.',
                 'design_image.image' => 'Dosya bir resim olmalıdır.',
@@ -100,8 +100,10 @@ class OrderManageController extends Controller
             return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için tasarım onayı verilemiyor.'], 400);
 
         }  catch (\Illuminate\Validation\ValidationException $e) {
+            $firstErrorMessage = head($e->validator->errors()->all());
+
             DB::rollback();
-            return response()->json(['errors' => $e->errors()], 422);
+            return response()->json(['error' => $firstErrorMessage], 422);
         }
     
     }
@@ -135,7 +137,7 @@ class OrderManageController extends Controller
                 'type' => 'P', // Ödeme tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
-                'order_id' => $order->id->toArray(),
+                'order_id' => $order->id, // toArray() kullanılmasına gerek yok
             ]);
 
             $order->orderImages()->save($orderImage);

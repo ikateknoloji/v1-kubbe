@@ -21,6 +21,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        /*
         // Admin kullanıcısını oluştur
         User::factory()->create(['user_type' => 'admin']);
 
@@ -35,13 +36,13 @@ class DatabaseSeeder extends Seeder
         ->create(['user_type' => 'manufacturer']);
 
 
-
         ProductCategory::factory()->has(ProductType::factory()->count(3))
         ->count(10)
         ->create()
         ;
         
-    
+    */
+
         Order::factory()
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->count(1))
