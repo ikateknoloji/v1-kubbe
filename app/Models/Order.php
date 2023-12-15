@@ -19,6 +19,7 @@ class Order extends Model
         'offer_price',
         'invoice_type',
         'is_rejected',
+        'note'
     ];
 
     // 'status' sütunu için dönüştürme fonksiyonu
@@ -83,6 +84,9 @@ class Order extends Model
         return $this->hasOne(OrderCancellation::class);
     }
 
-
+    public function invoiceInfo()
+    {
+        return $this->hasOne(InvoiceInfo::class, 'order_id');
+    }
 
 }

@@ -11,6 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // Not Alanı Eklenecek
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('customer_id');
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->decimal('offer_price', 8, 2);
             $table->enum('invoice_type', ['I', 'C']);
             $table->enum('is_rejected',['A','R','C','CR','MR','ORC'])->default('A');
+            $table->string('note')->nullable();
             $table->timestamps();
         
             $table->foreign('customer_id')->references('user_id')->on('customers')->onDelete('cascade');
