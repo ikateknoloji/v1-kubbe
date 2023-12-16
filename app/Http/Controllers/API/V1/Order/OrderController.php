@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1\Order;
 
 use App\Events\OrderStatusChangedEvent;
 use App\Http\Controllers\Controller;
+use App\Models\InvoiceInfo;
 use App\Models\Order;
 use App\Models\OrderImage;
 use App\Models\OrderItem;
@@ -36,10 +37,11 @@ class OrderController extends Controller
                 'invoice_type' => 'required|in:I,C',
                 'offer_price' => 'required|numeric|min:0',
                 'order_items' => 'required|array',
+                'note' => 'nullable|string',
                 'order_items.*.product_type_id' => 'required|exists:product_types,id',
                 'order_items.*.quantity' => 'required|integer|min:1',
                 'order_items.*.color' => 'required|string',
-                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf',
             ], [
                 'invoice_type.required' => 'Fatura tipi zorunludur.',
                 'invoice_type.in' => 'Geçersiz fatura tipi.',
@@ -84,6 +86,13 @@ class OrderController extends Controller
     
             $order->orderItems()->saveMany($orderItems);
     
+            /* // Şimdilik geliştirme aşamasında
+            // Fatura tipine göre ilgili fatura bilgileri ekleniyor
+            if ($order->invoice_type == 'C') {
+                $this->addCorporateInvoiceInfo($order, $request);
+            }
+            */
+            
             // Sipariş resmini ekleyerek kaydet (eğer varsa)
             if ($request->hasFile('image_url')) {
                 $image = $request->file('image_url');
@@ -149,6 +158,7 @@ class OrderController extends Controller
             'offer_price' => 'sometimes|required|numeric|min:0',
             'invoice_type' => 'sometimes|required|in:I,C',
             'is_rejected' => 'sometimes|required|in:A,R,C,CR,MR',
+            'note' => 'nullable|string',
         ], [
             'status.required' => 'Durum zorunludur.',
             'status.in' => 'Geçersiz durum.',
@@ -167,7 +177,7 @@ class OrderController extends Controller
 
         // Siparişi güncelle
         $order->update($request->only([
-            'status', 'manufacturer_id', 'offer_price', 'invoice_type', 'is_rejected'
+            'status', 'manufacturer_id', 'offer_price', 'invoice_type', 'is_rejected','note'
         ]));
 
         // Event'i hemen broadcast et
@@ -236,6 +246,30 @@ class OrderController extends Controller
         
     }
 
+    /*  Geliştirme Aşamasında
+    protected function addCorporateInvoiceInfo(Order $order, Request $request)
+    {
+        // Fatura bilgilerini doğrula
+        $request->validate([
+            'company_name' => 'required|string',
+            'address' => 'required|string',
+            'tax_office' => 'required|string',
+            'tax_number' => 'required|string',
+            'email' => 'required|email',
+        ]);
 
+        // Fatura bilgilerini ekleyerek kaydet
+        $invoiceInfo = InvoiceInfo::create([
+            'order_id' => $order->id,
+            'company_name' => $request->input('company_name'),
+            'address' => $request->input('address'),
+            'tax_office' => $request->input('tax_office'),
+            'tax_number' => $request->input('tax_number'),
+            'email' => $request->input('email'),
+        ]);
 
+        // Başarılı ekleme yanıtı
+        return response()->json(['invoice_info' => $invoiceInfo], 201);
+    }
+    */
 }

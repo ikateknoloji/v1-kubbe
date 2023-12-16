@@ -19,9 +19,10 @@ class Manufacturer extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function getInfo()
+    public function getInfoAttribute()
     {
         return [
+            'user_id' => $this->user_id,
             'email' => $this->user->email,
             'name' => $this->name,
             'surname' => $this->surname,
@@ -37,7 +38,6 @@ class Manufacturer extends Model
             'path' => $this->path,
         ];
     }
-
     public function orders()
     {
         return $this->hasMany(Order::class, 'manufacturer_id', 'user_id');

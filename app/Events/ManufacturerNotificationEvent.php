@@ -29,7 +29,7 @@ class ManufacturerNotificationEvent
         // Veritabanına üretici bildirimini kaydet
         UserNotification::create([
             'user_id' => $this->manufacturer_id,
-            'message' => $this->message,
+            'message' => json_encode($this->message),
         ]);
     }
 

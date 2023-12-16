@@ -25,10 +25,11 @@ class OrderFactory extends Factory
             'customer_id' => Customer::all()->random()->user_id,
             'order_code' => $this->faker->unique()->word,
             'status' => 'OC',
-            'manufacturer_id' => Manufacturer::all()->random()->user_id,
+            'manufacturer_id' => null,
             'offer_price' => $this->faker->randomFloat(2, 10, 1000),
             'invoice_type' => $this->faker->randomElement(['I', 'C']),
             'is_rejected' => 'A',
+            'note' => $this->faker->optional()->text,
         ];
     }
 }

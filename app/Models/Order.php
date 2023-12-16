@@ -10,7 +10,6 @@ class Order extends Model
     use HasFactory;
 
 
-
     protected $fillable = [
         'customer_id',
         'order_code',
@@ -19,12 +18,15 @@ class Order extends Model
         'offer_price',
         'invoice_type',
         'is_rejected',
-        'note'
+        'note',
+        'manufacturer_offer_price'
     ];
 
     // 'status' sütunu için dönüştürme fonksiyonu
     public function getStatusAttribute($value)
     {
+        // 'MA' => 'Üretici Onayı', Kaldırıldı.
+        
         $statusMap = [
             'OC' => 'Sipariş Onayı',
             'DP' => 'Tasarım Aşaması',
@@ -32,7 +34,8 @@ class Order extends Model
             'P'  => 'Ödeme Aşaması',
             'PA' => 'Ödeme Alındı',
             'MS' => 'Üretici Seçimi',
-            'MA' => 'Üretici Onayı',
+            'MO' => 'Üretici Teklifi',
+            'OA' => 'Teklifi Onayı',
             'PP' => 'Üretimde',
             'PR' => 'Ürün Hazır',
             'PIT' => 'Ürün Transfer Aşaması',

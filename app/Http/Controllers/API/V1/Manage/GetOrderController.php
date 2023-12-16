@@ -115,7 +115,7 @@ class GetOrderController extends Controller
     {
         $order = Order::with([
             'customer.user',
-            'manufacturer',
+            'manufacturer.user',
             'orderItems.productType.productCategory',
             'orderImages',
             'rejects',

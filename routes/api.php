@@ -147,6 +147,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('orders/active', [GetOrderController::class, 'getActiveOrders']);
           Route::get('orders/active/{status}', [GetOrderController::class, 'getOrdersByStatus']);
           Route::get('orders-item/active/{id}', [GetOrderController::class, 'getOrderById']);
+          Route::get('manufacturers', [ManufacturerController::class, 'index']);
         });
 
 
@@ -179,6 +180,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
           // Üretici seçimi işlemini gerçekleştirme
           Route::post('/select-manufacturer/{order}', [OrderManageController::class, 'selectManufacturer']);
           
+          // Üretici Teklifi kabul
+          Route::post('/orders/{order}/approve', [OrderManageController::class, 'offerApproveOrder']);
+
           // Ürünü kargo aşamasına işaretlenmiş olarak güncelleme
           Route::post('/mark-product-in-transition/{order}', [OrderManageController::class, 'markProductInTransition']);
           
@@ -326,7 +330,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         Route::prefix('manufacturer/orders')->group(function () {
           // Siparişi onaylama
-          Route::get('/confirm/{order}', [OrderManageController::class, 'confirmManufacturer']);
+          Route::post('/offer/{order}', [OrderManageController::class, 'offerManufacturer']);
           
           // Üretim sürecini başlatma rotası
           Route::get('/start-production/{order}', [OrderManageController::class, 'startProduction']);
