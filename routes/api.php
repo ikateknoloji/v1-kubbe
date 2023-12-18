@@ -99,9 +99,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
         // Product Categories
-        Route::group(['prefix' => 'product-categories'], function () {
+        Route::group(['prefix' => 'category'], function () {
           // Ürün kategorileri için kaynak rotalarını tanımlar.
-          Route::apiResource('.', ProductCategoryController::class);
+          Route::apiResource('product-categories', ProductCategoryController::class);
 
           // Ürün kategorisi resmini güncellemek için özel bir rota.
           Route::post('{productCategory}/update-image', [ProductCategoryController::class, 'updateImage']);
@@ -119,6 +119,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
             Route::post('{productType}/update-image', [ProductTypeController::class, 'updateImage']);
         });
 
+
+        Route::apiResource('customers', CustomerController::class);
 
 
 
@@ -181,7 +183,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::post('/select-manufacturer/{order}', [OrderManageController::class, 'selectManufacturer']);
           
           // Üretici Teklifi kabul
-          Route::post('/orders/{order}/approve', [OrderManageController::class, 'offerApproveOrder']);
+          Route::post('approve/{order}', [OrderManageController::class, 'offerApproveOrder']);
 
           // Ürünü kargo aşamasına işaretlenmiş olarak güncelleme
           Route::post('/mark-product-in-transition/{order}', [OrderManageController::class, 'markProductInTransition']);

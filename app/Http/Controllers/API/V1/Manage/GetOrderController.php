@@ -34,6 +34,10 @@ class GetOrderController extends Controller
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate();
 
+                // Her sipariş için orijinal 'status' değerini al
+            foreach ($orders as $order) {
+                $order->original_status = $order->getOriginalStatusAttribute();
+            }
 
         return response()->json(['orders' => $orders], 200);
     }
@@ -124,7 +128,7 @@ class GetOrderController extends Controller
         
         // İlgili resim tiplerini filtreleme
         $filteredImages = $order->orderImages
-            ->whereIn('type', ['L', 'D','P'])
+            ->whereIn('type', ['L', 'D','P','PR','SC'])
             ->groupBy('type')
             ->map(function ($images) {
                 return $images->map(function ($image) {

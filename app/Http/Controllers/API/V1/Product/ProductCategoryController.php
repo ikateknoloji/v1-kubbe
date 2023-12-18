@@ -7,6 +7,8 @@ use App\Models\ProductCategory;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
+
 
 class ProductCategoryController extends Controller
 {
@@ -60,8 +62,8 @@ class ProductCategoryController extends Controller
             // Başarılı oluşturma yanıtı
             return response()->json(['category' => $category], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollback();
-            return response()->json(['errors' => $e->errors()], 422);
+            $firstError = Arr::first($e->errors())[0];
+            return response()->json(['error' => $firstError], 422);
         }
     }
     

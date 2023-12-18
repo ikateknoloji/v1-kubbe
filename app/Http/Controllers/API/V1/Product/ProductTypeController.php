@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
+use Illuminate\Support\Arr;
 
 class ProductTypeController extends Controller
 {
@@ -16,8 +17,8 @@ class ProductTypeController extends Controller
      */
     public function index()
     {
-            $productTypes = ProductType::all();
-            return response()->json(['productTypes' => $productTypes], 200);
+        $productTypes = ProductType::with('productCategory')->get();
+        return response()->json(['productTypes' => $productTypes], 200);
 
     }
 
@@ -60,8 +61,8 @@ class ProductTypeController extends Controller
             // Başarılı oluşturma yanıtı
             return response()->json(['productType' => $productType], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollback();
-            return response()->json(['errors' => $e->errors()], 422);
+            $firstError = Arr::first($e->errors())[0];
+            return response()->json(['error' => $firstError], 422);
         }
     }
 

@@ -46,6 +46,12 @@ class Order extends Model
         return $statusMap[$value] ?? $value;
     }
 
+    public function getOriginalStatusAttribute()
+    {
+        return $this->attributes['status'];
+    }
+    
+
     // 'invoice_type' sütunu için dönüştürme fonksiyonu
     public function getInvoiceTypeAttribute($value)
     {

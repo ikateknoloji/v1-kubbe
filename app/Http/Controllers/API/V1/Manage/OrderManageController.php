@@ -269,14 +269,6 @@ class OrderManageController extends Controller
      */
     public function offerApproveOrder(Order $order)
     {
-        // Giriş yapan kullanıcının üretici olup olmadığını kontrol et
-        $manufacturerId = Auth::id();
-
-        // Order'ın manufacturer_id'si ile giriş yapan üreticinin user_id'sini kontrol et
-        if ($order->manufacturer_id != $manufacturerId) {
-            return response()->json(['error' => 'Bu işlemi sadece ilgili üretici gerçekleştirebilir.'], 403);
-        }
-
         // Sipariş durumunu kontrol et, sadece 'MO' durumundakileri işle
         if ($order->status === 'Üretici Teklifi') {
             // Sipariş durumunu 'OA' (Order Approved) olarak güncelle

@@ -27,10 +27,17 @@ class OrderImageFactory extends Factory
 
         return [
             'order_id' => Order::factory(),
-            'type' => 'L',
             'image_url' => asset(Storage::url($filePath)),
             'path' => $filePath,
             'mime_type' => $mimeType, // Yeni eklenen sütun
         ];
+    }
+    public function configureType($type)
+    {
+        return $this->state(function (array $attributes) use ($type) {
+            return [
+                'type' => $type,
+            ];
+        });
     }
 }

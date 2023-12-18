@@ -20,7 +20,7 @@ class CustomerController extends Controller
 
         // Her müşteri için getInfo metodunu çağır ve bilgileri al
         $customerInfo = $customers->map(function ($customer) {
-            return $customer->getInfoAttribute();
+            return $customer->getInfo();
         });
 
         return response()->json($customerInfo);

@@ -2,16 +2,17 @@
 
 namespace Database\Factories;
 
+use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Customer;
 use App\Models\Manufacturer;
 use App\Models\Order;
-use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
  */
-class OrderFactory extends Factory
+class OrderOfferFactory extends Factory
 {
+
     protected $model = Order::class;
 
     /**
@@ -21,17 +22,18 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
-        //OC
         return [
             'customer_id' => Customer::all()->random()->user_id,
-            'order_code' => $this->faker->unique()->randomNumber(5) . $this->faker->unique()->word,
-            'manufacturer_id' => null,
+            'order_code' => $this->faker->unique()->randomNumber(5) . $this->faker->word,
+            'manufacturer_id' => Manufacturer::all()->random()->user_id,
             'offer_price' => $this->faker->randomFloat(2, 10, 1000),
             'invoice_type' => $this->faker->randomElement(['I', 'C']),
             'is_rejected' => 'A',
+            'manufacturer_offer_price' => $this->faker->randomFloat(2, 1000, 4000),
             'note' => $this->faker->optional()->text,
         ];
     }
+
     public function configureStatus($status)
     {
         return $this->state(function (array $attributes) use ($status) {
