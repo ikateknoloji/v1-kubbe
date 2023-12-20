@@ -34,6 +34,7 @@ class Order extends Model
 
     protected $fillable = [
         'customer_id',
+        'order_name',
         'order_code',
         'status',
         'manufacturer_id',
@@ -41,7 +42,7 @@ class Order extends Model
         'invoice_type',
         'is_rejected',
         'note',
-        'manufacturer_offer_price'
+        'manufacturer_offer_price',
     ];
     protected $appends = ['original_status'];
 

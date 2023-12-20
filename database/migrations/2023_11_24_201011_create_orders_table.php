@@ -14,6 +14,7 @@ return new class extends Migration
         // Not Alanı Eklenecek
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
+            $table->string('order_name');
             $table->unsignedBigInteger('customer_id');
             $table->string('order_code');
             $table->enum('status', ['OC','DP','DA', 'P' ,'PA', 'MS', 'MO', 'OA' , 'PP', 'PR', 'PIT', 'PD']); 

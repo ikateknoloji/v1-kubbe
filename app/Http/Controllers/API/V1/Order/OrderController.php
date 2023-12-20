@@ -34,6 +34,7 @@ class OrderController extends Controller
         try {
             // Gelen verileri doğrula
             $request->validate([
+                'order_name' => 'required|string',
                 'invoice_type' => 'required|in:I,C',
                 'offer_price' => 'required|numeric|min:0',
                 'order_items' => 'required|array',
@@ -43,6 +44,7 @@ class OrderController extends Controller
                 'order_items.*.color' => 'required|string',
                 'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf',
             ], [
+                'order_name' => 'Şipariş adı gereklidir',
                 'invoice_type.required' => 'Fatura tipi zorunludur.',
                 'invoice_type.in' => 'Geçersiz fatura tipi.',
                 'offer_price.required' => 'Teklif fiyatı zorunludur.',
@@ -153,6 +155,7 @@ class OrderController extends Controller
         try {
         // Gelen verileri doğrula
         $request->validate([
+            'order_name' => 'required|string',
             'status' => 'sometimes|required|in:OC,DP,DA,P,PA,MS,MA,PP,PR,PD,PIT',
             'manufacturer_id' => 'nullable|sometimes|required|exists:manufacturers,user_id',
             'offer_price' => 'sometimes|required|numeric|min:0',
@@ -160,6 +163,7 @@ class OrderController extends Controller
             'is_rejected' => 'sometimes|required|in:A,R,C,CR,MR',
             'note' => 'nullable|string',
         ], [
+            'order_name' => 'Şipariş adı gereklidir',
             'status.required' => 'Durum zorunludur.',
             'status.in' => 'Geçersiz durum.',
             'manufacturer_id.exists' => 'Geçersiz üretici ID.',
