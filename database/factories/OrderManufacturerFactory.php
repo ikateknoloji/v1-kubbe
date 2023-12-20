@@ -22,6 +22,7 @@ class OrderManufacturerFactory extends Factory
     public function definition(): array
     {
         return [
+            'order_name' => $this->faker->word(),
             'customer_id' => Customer::all()->random()->user_id,
             'order_code' => $this->faker->unique()->randomNumber(5) . $this->faker->word,
             'manufacturer_id' => Manufacturer::all()->random()->user_id,

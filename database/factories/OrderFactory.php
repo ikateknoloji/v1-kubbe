@@ -23,6 +23,7 @@ class OrderFactory extends Factory
     {
         //OC
         return [
+            'order_name' => $this->faker->word(),
             'customer_id' => Customer::all()->random()->user_id,
             'order_code' => $this->faker->unique()->randomNumber(5) . $this->faker->unique()->word,
             'manufacturer_id' => null,
