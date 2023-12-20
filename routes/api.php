@@ -6,6 +6,7 @@ use App\Http\Controllers\API\V1\Manage\GetOrderController;
 use App\Http\Controllers\API\V1\Manage\GetRejectOrderController;
 use App\Http\Controllers\API\V1\Manage\OrderManageController;
 use App\Http\Controllers\API\V1\Manage\RejectOrderController;
+use App\Http\Controllers\API\V1\Order\NotificationController;
 use App\Http\Controllers\API\V1\Order\OrderController;
 use App\Http\Controllers\API\V1\Order\OrderImageController;
 use App\Http\Controllers\API\V1\Order\OrderItemController;
@@ -118,6 +119,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
             // TODO: Ürün tipi resmini güncellemek için özel bir rota.
             Route::post('{productType}/update-image', [ProductTypeController::class, 'updateImage']);
         });
+        
+        // Product Types
+        Route::group(['prefix' => 'admin'], function () {
+          Route::get('/notifications', [NotificationController::class, 'index']);
+          Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+          Route::post('/notifications/read/all', [NotificationController::class, 'markAllAsRead']);
+        });
 
 
         Route::apiResource('customers', CustomerController::class);
@@ -150,6 +158,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('orders/active/{status}', [GetOrderController::class, 'getOrdersByStatus']);
           Route::get('orders-item/active/{id}', [GetOrderController::class, 'getOrderById']);
           Route::get('manufacturers', [ManufacturerController::class, 'index']);
+          Route::get('/oldest-orders', [GetOrderController::class, 'getOldestOrders']);
+
         });
 
 

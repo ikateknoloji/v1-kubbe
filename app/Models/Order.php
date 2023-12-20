@@ -9,6 +9,28 @@ class Order extends Model
 {
     use HasFactory;
 
+    public static function getOldestOrdersWithCustomer(array $statuses)
+    {
+        // Belirli durumları içeren en eski siparişleri al
+        $orders = self::whereIn('status', $statuses)
+            ->orderBy('updated_at', 'asc')
+            ->get();
+
+        // Durum kodlarına göre gruplayarak sadece ilk gelen siparişi döndür
+        $groupedOrders = collect();
+        
+        foreach ($orders as $order) {
+            $status = $order->status;
+            
+            if (!$groupedOrders->has($status)) {
+                $groupedOrders[$status] = $order;
+                $groupedOrders[$status]->load('customer');
+            }
+        }
+
+        return $groupedOrders;
+    }
+
 
     protected $fillable = [
         'customer_id',
@@ -21,12 +43,34 @@ class Order extends Model
         'note',
         'manufacturer_offer_price'
     ];
+    protected $appends = ['original_status'];
 
-    // 'status' sütunu için dönüştürme fonksiyonu
-    public function getStatusAttribute($value)
+     // 'status' sütunu için dönüştürme fonksiyonu
+     public function getStatusAttribute($value)
+     {
+         // 'MA' => 'Üretici Onayı', Kaldırıldı.
+         
+         $statusMap = [
+             'OC' => 'Sipariş Onayı',
+             'DP' => 'Tasarım Aşaması',
+             'DA' => 'Tasarım Onaylandı',
+             'P'  => 'Ödeme Aşaması',
+             'PA' => 'Ödeme Alındı',
+             'MS' => 'Üretici Seçimi',
+             'MO' => 'Üretici Teklifi',
+             'OA' => 'Teklifi Onayı',
+             'PP' => 'Üretimde',
+             'PR' => 'Ürün Hazır',
+             'PIT' => 'Ürün Transfer Aşaması',
+             'PD' => 'Ürün Teslim Edildi',
+
+         ];
+
+         return $statusMap[$value] ?? $value;
+     }
+    
+    public function getStatusLabelAttribute()
     {
-        // 'MA' => 'Üretici Onayı', Kaldırıldı.
-        
         $statusMap = [
             'OC' => 'Sipariş Onayı',
             'DP' => 'Tasarım Aşaması',
@@ -40,10 +84,9 @@ class Order extends Model
             'PR' => 'Ürün Hazır',
             'PIT' => 'Ürün Transfer Aşaması',
             'PD' => 'Ürün Teslim Edildi',
-
         ];
-
-        return $statusMap[$value] ?? $value;
+    
+        return $statusMap[$this->attributes['status']] ?? $this->attributes['status'];
     }
 
     public function getOriginalStatusAttribute()
@@ -98,4 +141,5 @@ class Order extends Model
         return $this->hasOne(InvoiceInfo::class, 'order_id');
     }
 
+    
 }

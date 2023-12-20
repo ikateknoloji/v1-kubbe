@@ -26,27 +26,34 @@ class OrderStatusChangedEvent implements ShouldBroadcast
     public function __construct(Order $order, array $message)
     {
         $this->order = $order;
-        $this->message  = $message;
     
-        // Veritabanına kayıt ekleyin
-        UserNotification::create([
+        // Müşteri için bildirim oluşturun ve kaydedin
+        $customerNotification = UserNotification::create([
             'user_id' => $order->customer_id,
             'message' => json_encode($message),
         ]);
     
-        // Veritabanına kayıt ekleyin
+        // Üretici için bildirim oluşturun ve kaydedin (eğer varsa)
+        $manufacturerNotification = null;
         if (!is_null($order->manufacturer_id)) {
-            UserNotification::create([
+            $manufacturerNotification = UserNotification::create([
                 'user_id' => $order->manufacturer_id,
                 'message' => json_encode($message),
             ]);
         }
     
-        // Admin kullanıcısına bildirim göndermek için
-        AdminNotification::create([
+        // Yönetici için bildirim oluşturun ve kaydedin
+        $adminNotification = AdminNotification::create([
             'message' => json_encode($message),
             'is_read' => false,
         ]);
+    
+        // Her kullanıcı tipi için ayrı bir mesaj atayın
+        $this->message = [
+            'customer' => $customerNotification,
+            'manufacturer' => $manufacturerNotification,
+            'admin' => $adminNotification,
+        ];
     }
 
     /**
@@ -68,5 +75,10 @@ class OrderStatusChangedEvent implements ShouldBroadcast
         }
 
         return $channels;
+    }
+
+    public function broadcastAs()
+    {
+        return 'status-notifications';
     }
 }

@@ -4,6 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
+use App\Models\AdminNotification;
 use App\Models\Customer;
 use App\Models\Manufacturer;
 use App\Models\Order;
@@ -133,7 +134,7 @@ class DatabaseSeeder extends Seeder
         ->create();
         */
 
-
+        /*
         OrderOfferFactory::new()
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -143,6 +144,8 @@ class DatabaseSeeder extends Seeder
         ->configureStatus('PR') 
         ->count(40)
         ->create();
+        */
+        
 
         /*
         OrderOfferFactory::new()
@@ -168,6 +171,7 @@ class DatabaseSeeder extends Seeder
         ->count(40)
         ->create();
 
-*/
+        */
+        AdminNotification::factory()->count(10)->create();
         }
 }

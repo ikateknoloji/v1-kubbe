@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Broadcast;
 
 /*
@@ -18,8 +19,10 @@ Broadcast::channel('App.Models.User.{id}', function ($user, $id) {
 });
 
 Broadcast::channel('admin-notifications', function ($user) {
-    return $user->user_type === 'admin';
+    return Auth::check();
 });
+
+
 
 Broadcast::channel('user.{userId}', function ($user, $userId) {
         return (int) $user->id === (int) $userId;

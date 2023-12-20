@@ -23,17 +23,17 @@ class AdminNotificationEvent implements ShouldBroadcast
      *
      * @return void
      */
-    public function __construct( array $message)
+    public function __construct(array $message)
     {
-        $this->message = $message;
-
         // Veritabanına admin bildirimini kaydet
-        AdminNotification::create([
-            'message' => json_encode($this->message),
+        $adminNotification = AdminNotification::create([
+            'message' => json_encode($message),
             'is_read' => false,
         ]);
+    
+        // AdminNotification::create() metodunun döndürdüğü nesneyi kullan
+        $this->message = $adminNotification;
     }
-
     /**
      * Get the channels the event should broadcast on.
      *
@@ -45,4 +45,10 @@ class AdminNotificationEvent implements ShouldBroadcast
             new Channel('admin-notifications'),
         ];
     }
+
+    public function broadcastAs()
+    {
+        return 'admin-notifications';
+    }
+
 }

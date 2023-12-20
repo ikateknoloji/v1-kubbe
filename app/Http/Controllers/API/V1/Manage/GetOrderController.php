@@ -32,16 +32,46 @@ class GetOrderController extends Controller
                 }]);
             }])
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate();
-
-                // Her sipariş için orijinal 'status' değerini al
-            foreach ($orders as $order) {
-                $order->original_status = $order->getOriginalStatusAttribute();
-            }
+            ->paginate(8);
 
         return response()->json(['orders' => $orders], 200);
     }
 
+    public function getOldestOrders()
+    {
+        // Belirli durumları içeren en eski siparişleri al
+        $statuses = ['OC', 'P', 'MO', 'PR'];
+
+        // Her durum için en eski 5 siparişi içeren bir dizi oluştur
+        $oldestOrdersByStatus = [];
+        foreach ($statuses as $status) {
+            $oldestOrdersByStatus[$status] = Order::where('status', $status)
+                ->orderBy('updated_at', 'asc')
+                ->take(4)
+                ->get();
+
+            // Her bir durumdaki siparişler için müşteri bilgilerini yükle
+            $oldestOrdersByStatus[$status]->load('customer');
+        }
+
+        // 'A' (Active) durumuna sahip ve teslim edilmemiş siparişleri al
+        $orders = Order::where('is_rejected', 'A')
+        ->whereDoesntHave('orderItems', function ($query) {
+            $query->where('status', 'PD'); // 'PD' (Ürün Teslim Edildi) durumuna sahip orderItems olmayanları al
+        })
+        ->with(['customer' => function ($query) {
+            // İlgili müşteri bilgilerini getir
+            $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone')
+            ->with(['user' => function ($query) {
+                $query->select('id', 'email');
+            }]);
+        }])
+        ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+        ->paginate(5);
+
+        // Daha fazla işlem veya döndürme adımları eklenebilir
+        return response()->json(['oldest_orders' => $oldestOrdersByStatus , 'orders' =>  $orders ]);
+    }
 
     /**
      * Belirtilen 'status' değerine sahip siparişleri getirir.
@@ -87,7 +117,7 @@ class GetOrderController extends Controller
         // Belirtilen müşteri 'id' değerine sahip siparişleri al
         $orders = Order::where('customer_id', $customerId)
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate();
+            ->paginate(5);
     
         return response()->json(['orders' => $orders], 200);
     }
@@ -104,7 +134,7 @@ class GetOrderController extends Controller
         // Belirtilen üretici 'id' değerine sahip siparişleri al
         $orders = Order::where('manufacturer_id', $manufacturerId)
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate();
+            ->paginate(5);
 
         return response()->json(['orders' => $orders], 200);
     }
@@ -167,7 +197,7 @@ class GetOrderController extends Controller
         $orders = Order::where('customer_id', $customerId)
             ->where('status', $status)
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate();   
+            ->paginate(5);   
 
         return response()->json(['orders' => $orders], 200);
     }   
@@ -186,7 +216,7 @@ class GetOrderController extends Controller
         $orders = Order::where('manufacturer_id', $manufacturerId)
             ->where('status', $status)
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate();   
+            ->paginate(5);   
 
         return response()->json(['orders' => $orders], 200);
     }
