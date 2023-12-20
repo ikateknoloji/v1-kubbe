@@ -74,6 +74,7 @@ class OrderController extends Controller
                 'status' => 'OC', // Otomatik olarak "OC" durumu
                 'invoice_type' => $request->input('invoice_type'),
                 'offer_price' => $request->input('offer_price'),
+                'order_name' => $request->input('order_name'),
             ]);
     
             // Sipariş öğelerini ekleyerek kaydet
@@ -88,12 +89,10 @@ class OrderController extends Controller
     
             $order->orderItems()->saveMany($orderItems);
     
-            /* // Şimdilik geliştirme aşamasında
             // Fatura tipine göre ilgili fatura bilgileri ekleniyor
-            if ($order->invoice_type == 'C') {
+            if ($request->invoice_type == 'C') {
                 $this->addCorporateInvoiceInfo($order, $request);
             }
-            */
             
             // Sipariş resmini ekleyerek kaydet (eğer varsa)
             if ($request->hasFile('image_url')) {
@@ -181,7 +180,7 @@ class OrderController extends Controller
 
         // Siparişi güncelle
         $order->update($request->only([
-            'status', 'manufacturer_id', 'offer_price', 'invoice_type', 'is_rejected','note'
+            'status', 'manufacturer_id', 'offer_price', 'invoice_type', 'is_rejected','note','order_name'
         ]));
 
         // Event'i hemen broadcast et
@@ -250,7 +249,6 @@ class OrderController extends Controller
         
     }
 
-    /*  Geliştirme Aşamasında
     protected function addCorporateInvoiceInfo(Order $order, Request $request)
     {
         // Fatura bilgilerini doğrula
@@ -275,5 +273,4 @@ class OrderController extends Controller
         // Başarılı ekleme yanıtı
         return response()->json(['invoice_info' => $invoiceInfo], 201);
     }
-    */
 }
