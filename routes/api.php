@@ -82,6 +82,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/update-image/{orderImage}', [OrderImageController::class, 'updateImage']);
 
 
+    Route::post('/validate-form', [OrderManageController::class, 'validateForms']);
 
     
     /**

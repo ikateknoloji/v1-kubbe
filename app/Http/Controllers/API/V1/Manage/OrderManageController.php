@@ -511,5 +511,34 @@ class OrderManageController extends Controller
         return response()->json(['message' => 'Fatura eklendi ve müşteriye bildirim gönderildi.'], 200);
     }
 
-
+    /**
+     * Form içeriklerinin validation işlemlerini yapıyoruz.
+     * ? Tüm rotalar rotası
+     */
+    public function validateForms(Request $request)
+    {
+        // İlk formun doğrulamasını yap
+        $request->validate([
+            'order_name' => 'required|string',
+            'invoice_type' => 'required|in:I,C',
+            'offer_price' => 'required|numeric|min:0',
+            'note' => 'nullable|string',
+            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+        ]);
+    
+        // Eğer fatura tipi C ise, ikinci formun doğrulamasını yap
+        if ($request->input('invoice_type') == 'C') {
+            $request->validate([
+                'company_name' => 'required|string',
+                'address' => 'required|string',
+                'tax_office' => 'required|string',
+                'tax_number' => 'required|string',
+                'email' => 'required|email',
+            ]);
+        }
+    
+        // Doğrulama başarılı
+        return response()->json(['message' => 'Doğrulama başarılı'], 200);
+    }
+    
 }
