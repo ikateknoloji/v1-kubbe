@@ -209,4 +209,12 @@ class ProductTypeController extends Controller
             ]);
         }
     }
+
+    public function getProductTypesByCategoryId($categoryId)
+    {
+        // Belirli bir kategoriye ait ürün tiplerini getir
+        $productTypes = ProductType::where('product_category_id', $categoryId)->get();
+    
+        return response()->json(['productTypes' => $productTypes], 200);
+    }
 }

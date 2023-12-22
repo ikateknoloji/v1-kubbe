@@ -42,7 +42,7 @@ class OrderController extends Controller
                 'order_items.*.product_type_id' => 'required|exists:product_types,id',
                 'order_items.*.quantity' => 'required|integer|min:1',
                 'order_items.*.color' => 'required|string',
-                'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+                'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
             ], [
                 'order_name' => 'Şipariş adı gereklidir',
                 'invoice_type.required' => 'Fatura tipi zorunludur.',
@@ -135,6 +135,9 @@ class OrderController extends Controller
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
             return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            DB::rollback();
+            return response()->json(['message' => 'Bir hata oluştu.'], 500);
         }
 
     }

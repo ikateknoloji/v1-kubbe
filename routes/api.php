@@ -83,7 +83,15 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
     Route::post('/validate-form', [OrderManageController::class, 'validateForms']);
+    Route::post('/validate-order-item', [OrderManageController::class, 'validateOrderItem']);
 
+      // Product Categories
+      Route::group(['prefix' => 'order/category'], function () {
+        // Ürün kategorileri için kaynak rotalarını tanımlar.
+        Route::apiResource('product-categories', ProductCategoryController::class);
+        
+        Route::get('{categoryId}/types', [ProductTypeController::class, 'getProductTypesByCategoryId']);
+      });
     
     /**
      * ? Admin kullanıcısı için oluşturulmuş korumalı rotalardır.

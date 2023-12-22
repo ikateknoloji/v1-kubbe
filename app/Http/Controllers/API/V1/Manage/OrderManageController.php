@@ -17,6 +17,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Arr;
 
 class OrderManageController extends Controller
 {
@@ -523,7 +524,7 @@ class OrderManageController extends Controller
             'invoice_type' => 'required|in:I,C',
             'offer_price' => 'required|numeric|min:0',
             'note' => 'nullable|string',
-            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+            'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
         ]);
     
         // Eğer fatura tipi C ise, ikinci formun doğrulamasını yap
@@ -541,4 +542,32 @@ class OrderManageController extends Controller
         return response()->json(['message' => 'Doğrulama başarılı'], 200);
     }
     
+    public function validateOrderItem(Request $request)
+    {
+        try {
+            // Gelen verileri doğrula
+            $validatedData = $request->validate([
+                'product_type_id' => 'required|exists:product_types,id',
+                'quantity' => 'required|integer|min:1',
+                'color' => 'required|string',
+            ], [
+                'product_type_id.required' => 'Ürün tipi zorunludur.',
+                'product_type_id.exists' => 'Geçersiz ürün tipi.',
+                'quantity.required' => 'Miktar zorunludur.',
+                'quantity.integer' => 'Miktar bir sayı olmalıdır.',
+                'quantity.min' => 'Miktar en az 1 olmalıdır.',
+                'color.required' => 'Renk zorunludur.',
+                'color.string' => 'Renk bir metin olmalıdır.',
+            ]);
+    
+            // Başarılı doğrulama yanıtı
+            return response()->json(['message' => 'Doğrulama başarılı.'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // İlk hata mesajını al
+            $firstError = Arr::first($e->errors())[0];
+    
+            // Hata yanıtı döndür
+            return response()->json(['error' => $firstError], 422);
+        }
+    }
 }
