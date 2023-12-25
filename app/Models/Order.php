@@ -46,6 +46,7 @@ class Order extends Model
     ];
     protected $appends = ['original_status'];
 
+
      // 'status' sütunu için dönüştürme fonksiyonu
      public function getStatusAttribute($value)
      {
@@ -142,5 +143,9 @@ class Order extends Model
         return $this->hasOne(InvoiceInfo::class, 'order_id');
     }
 
+    public function customerInfo()
+    {
+        return $this->hasOne(CustomerInfo::class);
+    }
     
 }

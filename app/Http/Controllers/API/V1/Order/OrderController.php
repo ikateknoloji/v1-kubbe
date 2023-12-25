@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1\Order;
 
 use App\Events\OrderStatusChangedEvent;
 use App\Http\Controllers\Controller;
+use App\Models\CustomerInfo;
 use App\Models\InvoiceInfo;
 use App\Models\Order;
 use App\Models\OrderImage;
@@ -43,6 +44,10 @@ class OrderController extends Controller
                 'order_items.*.quantity' => 'required|integer|min:1',
                 'order_items.*.color' => 'required|string',
                 'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+                'name' => 'required|string',
+                'surname' => 'required|string',
+                'phone' => 'required|string|regex:/^(\+90|0)?[1-9]{1}[0-9]{9}$/',
+                'email' => 'nullable|email',
             ], [
                 'order_name' => 'Şipariş adı gereklidir',
                 'invoice_type.required' => 'Fatura tipi zorunludur.',
@@ -62,6 +67,14 @@ class OrderController extends Controller
                 'image_url.image' => 'Geçersiz resim formatı.',
                 'image_url.mimes' => 'Geçersiz resim MIME türü.',
                 'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
+                'phone.required' => 'Telefon numarası zorunludur.',
+                'phone.string' => 'Telefon numarası bir dize olmalıdır.',
+                'phone.regex' => 'Geçersiz telefon numarası.',
+                'name.required' => 'Ad alanı zorunludur.',
+                'name.string' => 'Ad alanı bir dize olmalıdır.',
+                'surname.required' => 'Soyadı alanı zorunludur.',
+                'surname.string' => 'Soyadı alanı bir dize olmalıdır.',
+                'email.email' => 'Geçersiz e-posta adresi.',
             ]);
 
             // Transaksiyon başlat
@@ -92,6 +105,15 @@ class OrderController extends Controller
             // Fatura tipine göre ilgili fatura bilgileri ekleniyor
             if ($request->invoice_type == 'C') {
                 $this->addCorporateInvoiceInfo($order, $request);
+            }else {
+                // Fatura tipi 'C' değilse, CustomerInfo tablosuna bilgileri ekliyoruz
+                CustomerInfo::create([
+                    'name' => $request->input('name'),
+                    'surname' => $request->input('surname'),
+                    'phone' => $request->input('phone'),
+                    'email' => $request->input('email'),
+                    'order_id' => $order->id, // Yeni oluşturulan siparişin ID'si
+                ]);
             }
             
             // Sipariş resmini ekleyerek kaydet (eğer varsa)
@@ -127,9 +149,6 @@ class OrderController extends Controller
             
             // Transaksiyonu tamamla
             DB::commit();
-            
-
-    
             // Başarılı oluşturma yanıtı
             return response()->json(['order' => $order], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -273,6 +292,14 @@ class OrderController extends Controller
             'email' => $request->input('email'),
         ]);
 
+        // Müşteri bilgilerini ekleyerek kaydet
+        $customerInfo = CustomerInfo::create([
+            'name' => $request->input('name'),
+            'surname' => $request->input('surname'),
+            'phone' => $request->input('phone'),
+            'email' => $request->input('email'),
+            'order_id' => $order->id, // Yeni oluşturulan siparişin ID'si
+        ]);
         // Başarılı ekleme yanıtı
         return response()->json(['invoice_info' => $invoiceInfo], 201);
     }
