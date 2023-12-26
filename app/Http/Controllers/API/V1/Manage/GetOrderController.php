@@ -18,7 +18,6 @@ class GetOrderController extends Controller
      */
     public function getActiveOrders()
     {
-        
         // 'A' (Active) durumuna sahip ve teslim edilmemiş siparişleri al
         $orders = Order::where('is_rejected', 'A')
             ->whereDoesntHave('orderItems', function ($query) {
@@ -30,12 +29,13 @@ class GetOrderController extends Controller
                 ->with(['user' => function ($query) {
                     $query->select('id', 'email');
                 }]);
-            }])
+            }, 'customerInfo']) // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate(8);
-
+    
         return response()->json(['orders' => $orders], 200);
     }
+    
 
     public function getOldestOrders()
     {
@@ -90,18 +90,16 @@ class GetOrderController extends Controller
                 ->with(['user' => function ($query) {
                     $query->select('id', 'email');
                 }]);
-            }
-            , 'manufacturer' => function ($query) {
+            }, 'manufacturer' => function ($query) {
                 // İlgili müşteri ve üretici bilgilerini getir
                 $query->select('user_id','id', 'name', 'surname', 'company_name', 'phone')
                 ->with(['user' => function ($query) {
                     $query->select('id', 'email');
                 }]);
-            }])
-        ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-        ->paginate(10);
-
-
+            }, 'customerInfo']) // customerInfo ilişkisini ekledik
+            ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+            ->paginate(10);
+    
         return response()->json(['orders' => $orders], 200);
     }
 
@@ -116,6 +114,7 @@ class GetOrderController extends Controller
     
         // Belirtilen müşteri 'id' değerine sahip siparişleri al
         $orders = Order::where('customer_id', $customerId)
+            ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate(5);
     
@@ -134,6 +133,7 @@ class GetOrderController extends Controller
         // Belirtilen üretici 'id' değerine sahip siparişleri al
         $orders = Order::where('manufacturer_id', $manufacturerId)
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+            ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->paginate(5);
 
         return response()->json(['orders' => $orders], 200);
@@ -154,6 +154,7 @@ class GetOrderController extends Controller
             'orderImages',
             'rejects',
             'orderCancellation',
+            'customerInfo' // customerInfo ilişkisini ekledik
         ])->find($id);
         
         // İlgili resim tiplerini filtreleme
@@ -180,8 +181,8 @@ class GetOrderController extends Controller
         
         // Dönüştürülmüş sipariş nesnesini kullanabilirsiniz
         return response()->json(['order' => $order], 200);        
-        
     }
+    
 
     /**
      * Belirtilen müşteri 'id' değerine sahip ve belirtilen 'status' değerine sahip siparişleri getirir.
@@ -196,6 +197,7 @@ class GetOrderController extends Controller
         // Belirtilen müşteri 'id' değerine sahip ve belirtilen 'status' değerine sahip siparişleri al
         $orders = Order::where('customer_id', $customerId)
             ->where('status', $status)
+            ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate(5);   
 
@@ -215,11 +217,13 @@ class GetOrderController extends Controller
         // Belirtilen üretici 'id' değerine sahip ve belirtilen 'status' değerine sahip siparişleri al
         $orders = Order::where('manufacturer_id', $manufacturerId)
             ->where('status', $status)
+            ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate(5);   
 
         return response()->json(['orders' => $orders], 200);
     }
+    
     /*
     public function downloadImage($imageId)
     {
