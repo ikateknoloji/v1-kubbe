@@ -41,4 +41,13 @@ class OrderManufacturerFactory extends Factory
             ];
         });
     }
+
+    public function configureInvoiceType($invoiceType)
+    {
+        return $this->state(function (array $attributes) use ($invoiceType) {
+            return [
+                'invoice_type' => $invoiceType,
+            ];
+        });
+    }
 }

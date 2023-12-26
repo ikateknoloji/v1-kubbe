@@ -6,6 +6,8 @@ namespace Database\Seeders;
 
 use App\Models\AdminNotification;
 use App\Models\Customer;
+use App\Models\CustomerInfo;
+use App\Models\InvoiceInfo;
 use App\Models\Manufacturer;
 use App\Models\Order;
 use App\Models\OrderImage;
@@ -24,6 +26,7 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+/*
         // Admin kullanıcısını oluştur
         User::factory()->create(['user_type' => 'admin']);
 
@@ -42,111 +45,285 @@ class DatabaseSeeder extends Seeder
         ->count(10)
         ->create()
         ;
-    
-        /*
+*/
+
+/*
         Order::factory()
         ->has(OrderItem::factory()->count(3))
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderImage::factory()->count(1))
+        ->configureStatus('OC') 
+        ->configureInvoiceType('I') 
+        ->count(10)
+        ->create();
+
+        Order::factory()
+        ->has(OrderItem::factory()->count(3))
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->has(OrderImage::factory()->count(1))
+        ->configureStatus('OC') 
+        ->configureInvoiceType('C') 
+        ->count(10)
+        ->create();
+*/
+
+
+
+/*
+        Order::factory()
+        ->has(OrderItem::factory()->count(3))
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->configureStatus('OC') 
+        ->configureInvoiceType('I') 
         ->count(20)
         ->create();
 
         Order::factory()
         ->has(OrderItem::factory()->count(3))
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
         ->configureStatus('OC') 
-        ->count(40)
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+
+
+        Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->configureStatus('DP')
+        ->configureInvoiceType('I')  
+        ->count(20)
         ->create();
 
         Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
         ->configureStatus('DP') 
-        ->count(40)
+        ->configureInvoiceType('C') 
+        ->count(20)
         ->create();
-        */
-    /*
+*/
+
+
+
+/*
+
+        
         Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->configureStatus('DA') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
 
         Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('DA') 
+        ->configureInvoiceType('I') 
+        ->count(20)
+        ->create();
+
+        Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
         ->configureStatus('P') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
-*/
-        /*
+
         Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('P') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+        
+*/
+
+
+/*
+        Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
         ->configureStatus('PA') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
-
-        OrderManufacturerFactory::new()
+        
+        Order::factory()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
-        ->configureStatus('MS') 
-        ->count(40)
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('PA') 
+        ->configureInvoiceType('C') 
+        ->count(20)
         ->create();
-        */
 
 
-        /*
+        OrderManufacturerFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->configureStatus('MS')        
+        ->configureInvoiceType('I') 
+        ->count(20)
+        ->create();
+
+
+        OrderManufacturerFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('MS') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+*/
+
+
+
+
+
+/*     
         OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
         ->configureStatus('MO') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
+        ->create();
+
+        OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('MO') 
+        ->configureInvoiceType('C') 
+        ->count(20)
         ->create();
         
         OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
         ->configureStatus('OA') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
 
         OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('OA') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+
+
+
+        OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
         ->configureStatus('PP') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
-        */
-
-        /*
+        
+        
         OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('PP') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+*/
+
+
+
+
+/*
+        OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
         ->has(OrderImage::factory()->configureType('P')->count(1))
         ->has(OrderImage::factory()->configureType('PR')->count(1))
         ->configureStatus('PR') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
-        */
         
-
-        /*
         OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(OrderImage::factory()->configureType('PR')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('PR') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+*/        
+        
+/*
+        OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
@@ -154,11 +331,26 @@ class DatabaseSeeder extends Seeder
         ->has(OrderImage::factory()->configureType('PR')->count(1))
         ->has(OrderImage::factory()->configureType('SC')->count(1))
         ->configureStatus('PIT') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
-        
 
         OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(OrderImage::factory()->configureType('PR')->count(1))
+        ->has(OrderImage::factory()->configureType('SC')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('PIT') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();   
+
+        OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
         ->has(OrderImage::factory()->configureType('D')->count(1))
@@ -166,11 +358,26 @@ class DatabaseSeeder extends Seeder
         ->has(OrderImage::factory()->configureType('PR')->count(1))
         ->has(OrderImage::factory()->configureType('SC')->count(1))
         ->configureStatus('PD') 
-        ->count(40)
+        ->configureInvoiceType('I') 
+        ->count(20)
         ->create();
+
+        OrderOfferFactory::new()
+        ->has(CustomerInfo::factory()->count(1))
+        ->has(OrderItem::factory()->count(3))
+        ->has(OrderImage::factory()->configureType('L')->count(1))
+        ->has(OrderImage::factory()->configureType('D')->count(1))
+        ->has(OrderImage::factory()->configureType('P')->count(1))
+        ->has(OrderImage::factory()->configureType('PR')->count(1))
+        ->has(OrderImage::factory()->configureType('SC')->count(1))
+        ->has(InvoiceInfo::factory()->count(1))
+        ->configureStatus('PD') 
+        ->configureInvoiceType('C') 
+        ->count(20)
+        ->create();
+        
         AdminNotification::factory()->count(10)->create();
 
-        */
-
-        }
+*/
+    }
 }

@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('invoice_infos', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('order_id');
-            $table->string('company_name');
+            $table->string('company_namae');
             $table->string('address');
             $table->string('tax_office');
             $table->string('tax_number');

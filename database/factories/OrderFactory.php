@@ -28,7 +28,7 @@ class OrderFactory extends Factory
             'order_code' => $this->faker->unique()->randomNumber(5) . $this->faker->unique()->word,
             'manufacturer_id' => null,
             'offer_price' => $this->faker->randomFloat(2, 10, 1000),
-            'invoice_type' => $this->faker->randomElement(['I', 'C']),
+            // 'invoice_type' => $this->faker->randomElement(['I', 'C']),
             'is_rejected' => 'A',
             'note' => $this->faker->optional()->text,
         ];
@@ -38,6 +38,15 @@ class OrderFactory extends Factory
         return $this->state(function (array $attributes) use ($status) {
             return [
                 'status' => $status,
+            ];
+        });
+    }
+
+    public function configureInvoiceType($invoiceType)
+    {
+        return $this->state(function (array $attributes) use ($invoiceType) {
+            return [
+                'invoice_type' => $invoiceType,
             ];
         });
     }
