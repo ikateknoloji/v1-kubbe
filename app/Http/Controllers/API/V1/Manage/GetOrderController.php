@@ -25,13 +25,13 @@ class GetOrderController extends Controller
             })
             ->with(['customer' => function ($query) {
                 // İlgili müşteri bilgilerini getir
-                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone')
+                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone','image_url')
                 ->with(['user' => function ($query) {
                     $query->select('id', 'email');
                 }]);
             }, 'customerInfo']) // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate(8);
+            ->paginate(9);
     
         return response()->json(['orders' => $orders], 200);
     }
@@ -86,7 +86,7 @@ class GetOrderController extends Controller
             ->where('is_rejected', 'A')
             ->with(['customer' => function ($query) {
                 // İlgili müşteri ve üretici bilgilerini getir
-                $query->select('user_id','id', 'name', 'surname', 'company_name', 'phone')
+                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone','image_url')
                 ->with(['user' => function ($query) {
                     $query->select('id', 'email');
                 }]);
@@ -98,7 +98,7 @@ class GetOrderController extends Controller
                 }]);
             }, 'customerInfo']) // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate(10);
+            ->paginate(9);
     
         return response()->json(['orders' => $orders], 200);
     }
@@ -116,7 +116,7 @@ class GetOrderController extends Controller
         $orders = Order::where('customer_id', $customerId)
             ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate(5);
+            ->paginate(9);
     
         return response()->json(['orders' => $orders], 200);
     }
@@ -154,7 +154,9 @@ class GetOrderController extends Controller
             'orderImages',
             'rejects',
             'orderCancellation',
-            'customerInfo' // customerInfo ilişkisini ekledik
+            'customerInfo', // customerInfo ilişkisini ekledik
+            'invoiceInfo' // customerInfo ilişkisini ekledik
+
         ])->find($id);
         
         // İlgili resim tiplerini filtreleme
@@ -199,7 +201,7 @@ class GetOrderController extends Controller
             ->where('status', $status)
             ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate(5);   
+            ->paginate(9);   
 
         return response()->json(['orders' => $orders], 200);
     }   

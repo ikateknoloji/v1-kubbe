@@ -44,7 +44,8 @@ class Order extends Model
         'note',
         'manufacturer_offer_price',
     ];
-    protected $appends = ['original_status'];
+
+    protected $appends = ['original_status', 'status_color'];
 
 
      // 'status' sütunu için dönüştürme fonksiyonu
@@ -55,7 +56,7 @@ class Order extends Model
          $statusMap = [
              'OC' => 'Sipariş Onayı',
              'DP' => 'Tasarım Aşaması',
-             'DA' => 'Tasarım Onaylandı',
+             'DA' => 'Tasarım Eklendi',
              'P'  => 'Ödeme Aşaması',
              'PA' => 'Ödeme Alındı',
              'MS' => 'Üretici Seçimi',
@@ -70,13 +71,35 @@ class Order extends Model
 
          return $statusMap[$value] ?? $value;
      }
+
+     public  function getStatusColorAttribute($status)
+     {
+            $status = $this->original_status;  // Model örneğinin 'status' özelliğine erişim
+
+            $statusColorMap = [
+                'OC' => '#FF0000', // Kırmızı
+                'DP' => '#debf10', // Daha koyu Sarı
+                'DA' => '#008000', // Yeşil
+                'P'  => '#0000FF', // Mavi
+                'PA' => '#800080', // Mor
+                'MS' => '#FFA500', // Turuncu
+                'MO' => '#808080', // Gri
+                'OA' => '#FF69B4', // Daha koyu Pembe
+                'PP' => '#800000', // Maroon
+                'PR' => '#008B8B', // Daha koyu Aqua
+                'PIT' => '#000080', // Navy
+                'PD' => '#006666', // Daha koyu Teal
+            ];
+        
+            return $statusColorMap[$status] ?? '#000000'; // Eğer durum kodu haritada yoksa, varsayılan olarak siyah döndürülür.
+    }
     
     public function getStatusLabelAttribute()
     {
         $statusMap = [
             'OC' => 'Sipariş Onayı',
             'DP' => 'Tasarım Aşaması',
-            'DA' => 'Tasarım Onaylandı',
+            'DA' => 'Tasarım Eklendi',
             'P'  => 'Ödeme Aşaması',
             'PA' => 'Ödeme Alındı',
             'MS' => 'Üretici Seçimi',

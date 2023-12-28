@@ -32,6 +32,7 @@ class OrderController extends Controller
     public function store(Request $request)
     {
 
+        
         try {
             // Gelen verileri doğrula
             $request->validate([
@@ -46,7 +47,7 @@ class OrderController extends Controller
                 'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
                 'name' => 'required|string',
                 'surname' => 'required|string',
-                'phone' => 'required|string|regex:/^(\+90|0)?[1-9]{1}[0-9]{9}$/',
+                'phone' => ['required', 'string', 'regex:/^(\+90|0)?[1-9]{1}[0-9]{9}$/'],
                 'email' => 'nullable|email',
             ], [
                 'order_name' => 'Şipariş adı gereklidir',
@@ -156,7 +157,7 @@ class OrderController extends Controller
             return response()->json(['errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollback();
-            return response()->json(['message' => 'Bir hata oluştu.'], 500);
+            return response()->json( $e, 500);
         }
 
     }

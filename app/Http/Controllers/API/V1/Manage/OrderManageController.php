@@ -121,7 +121,7 @@ class OrderManageController extends Controller
     public function approvePaymentAndProceed(Request $request, Order $order)
     {
         // Sipariş durumunu kontrol et, sadece 'DA' durumundakileri güncelle
-        if ($order->status === 'Tasarım Onaylandı') {
+        if ($order->status === 'Tasarım Eklendi') {
 
             $request->validate([
                 'payment_proof' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048',
@@ -518,25 +518,57 @@ class OrderManageController extends Controller
      */
     public function validateForms(Request $request)
     {
-        // İlk formun doğrulamasını yap
-        $request->validate([
-            'order_name' => 'required|string',
-            'invoice_type' => 'required|in:I,C',
-            'offer_price' => 'required|numeric|min:0',
-            'note' => 'nullable|string',
-            'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
-        ]);
-    
-        // Eğer fatura tipi C ise, ikinci formun doğrulamasını yap
+        // Fatura tipine göre doğrulama kurallarını belirle
+        $rules = [
+        'order_name' => 'required|string',
+        'invoice_type' => 'required|in:I,C',
+        'offer_price' => 'required|numeric|min:0',
+        'note' => 'nullable|string',
+        'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+        'name' => 'required|string',
+        'surname' => 'required|string',
+        'phone' => 'required|string|regex:/^([5]{1}[0-9]{9})$/',
+        'email' => 'nullable|email',
+        ];
+
         if ($request->input('invoice_type') == 'C') {
-            $request->validate([
-                'company_name' => 'required|string',
-                'address' => 'required|string',
-                'tax_office' => 'required|string',
-                'tax_number' => 'required|string',
-                'email' => 'required|email',
-            ]);
+        $rules['company_name'] = 'required|string';
+        $rules['address'] = 'required|string';
+        $rules['tax_office'] = 'required|string';
+        $rules['tax_number'] = 'required|string';
+        $rules['email'] = 'required|email';
         }
+
+        $request->validate($rules,[
+            'order_name' => 'Şipariş adı gereklidir',
+            'invoice_type.required' => 'Fatura tipi zorunludur.',
+            'invoice_type.in' => 'Geçersiz fatura tipi.',
+            'offer_price.required' => 'Teklif fiyatı zorunludur.',
+            'offer_price.numeric' => 'Teklif fiyatı bir sayı olmalıdır.',
+            'offer_price.min' => 'Teklif fiyatı en az 0 olmalıdır.', 
+            'image_url.image' => 'Geçersiz resim formatı.',
+            'image_url.mimes' => 'Geçersiz resim MIME türü.',
+            'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
+            'phone.required' => 'Telefon numarası zorunludur.',
+            'phone.string' => 'Telefon numarası bir dize olmalıdır.',
+            'phone.regex' => 'Geçersiz telefon numarası.',
+            'name.required' => 'Ad alanı zorunludur.',
+            'name.string' => 'Ad alanı bir dize olmalıdır.',
+            'surname.required' => 'Soyadı alanı zorunludur.',
+            'surname.string' => 'Soyadı alanı bir dize olmalıdır.',
+            'company_name.required' => 'Şirket adı alanı zorunludur.',
+            'company_name.string' => 'Şirket adı bir dize olmalıdır.',
+            'address.required' => 'Adres alanı zorunludur.',
+            'address.string' => 'Adres bir dize olmalıdır.',
+            'tax_office.required' => 'Vergi dairesi alanı zorunludur.',
+            'tax_office.string' => 'Vergi dairesi bir dize olmalıdır.',
+            'tax_number.required' => 'Vergi numarası alanı zorunludur.',
+            'tax_number.string' => 'Vergi numarası bir dize olmalıdır.',
+            'email.required' => 'E-posta alanı zorunludur.',
+            'email.email' => 'Geçersiz e-posta adresi.',
+        ]);
+
+
     
         // Doğrulama başarılı
         return response()->json(['message' => 'Doğrulama başarılı'], 200);
