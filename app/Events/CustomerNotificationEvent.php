@@ -11,7 +11,7 @@ use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
-class CustomerNotificationEvent
+class CustomerNotificationEvent implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
@@ -26,10 +26,13 @@ class CustomerNotificationEvent
         $this->message = $message;
 
         // Veritabanına müşteri bildirimini kaydet
-        UserNotification::create([
+        $customerNotification = UserNotification::create([
             'user_id' => $this->customer_id,
             'message' => json_encode($this->message),
         ]);
+
+        $this->message = $customerNotification;
+
     }
 
     /**
@@ -43,4 +46,9 @@ class CustomerNotificationEvent
             new PrivateChannel('user.' . $this->customer_id),
         ];
     }
+    public function broadcastAs()
+    {
+        return 'customer.notification';
+    }
+
 }

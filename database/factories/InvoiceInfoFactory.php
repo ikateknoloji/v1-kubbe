@@ -23,7 +23,7 @@ class InvoiceInfoFactory extends Factory
     {
         return [
             'order_id' => Order::factory(),
-            'company_namae' => $this->faker->company,
+            'company_name' => $this->faker->company,
             'address' => $this->faker->address,
             'tax_office' => $this->faker->word,
             'tax_number' => $this->faker->randomNumber(9, true),

@@ -16,9 +16,7 @@ use App\Http\Controllers\API\V1\USER\CustomerController;
 use App\Http\Controllers\API\V1\USER\ManufacturerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use Intervention\Image\Facades\Image;
-use Illuminate\Support\Facades\Storage;
-use Spatie\PdfToImage\Pdf;
+use Illuminate\Support\Facades\Broadcast;
 
 
 /*
@@ -50,6 +48,10 @@ Route::post('/login', [AuthController::class, 'login']);
 // Şifre sıfırlama için rota
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);
     
+Route::post('/broadcasting/auth', function (Request $request) {
+  return Broadcast::auth($request);
+});
+
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
@@ -107,7 +109,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         */
 
 
-
+/*
         // Product Categories
         Route::group(['prefix' => 'category'], function () {
           // Ürün kategorileri için kaynak rotalarını tanımlar.
@@ -116,7 +118,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           // Ürün kategorisi resmini güncellemek için özel bir rota.
           Route::post('{productCategory}/update-image', [ProductCategoryController::class, 'updateImage']);
         });
-
+*/
         
 
         
@@ -138,7 +140,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
         Route::apiResource('customers', CustomerController::class);
-
+          // TODO: Müşteri resmini güncellemek için özel bir rota.
+          Route::post('{customer}/update-image', [CustomerController::class, 'updateImage']);
 
 
         /**
@@ -247,7 +250,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
          * ? Müşteri bilgileri düzenleme resim ekleme veya güncelleme
          * TODO: Kullanıcı bilgileri ekle ve düzenle.
          */
-
+/*
          Route::group(['prefix' => 'company'], function () {
           // TODO: Müşteri kaynak rotalarını tanımlar.
           Route::apiResource('customers', CustomerController::class);
@@ -255,7 +258,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           // TODO: Müşteri resmini güncellemek için özel bir rota.
           Route::post('{customer}/update-image', [CustomerController::class, 'updateImage']);
          });
-
+*/
   
 
         /**
@@ -267,6 +270,10 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('orders/{status}', [GetOrderController::class, 'getCustomerOrdersByStatus']);
           Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
         });
+
+        Route::get('/customer/notifications', [NotificationController::class, 'getCustomerNotifications']);
+        Route::post('customer/notifications/{id}/read', [NotificationController::class, 'markAsReadCustomer']);
+
 
         /**
          * ? Şipariş durum bilgisini değiştirme.
