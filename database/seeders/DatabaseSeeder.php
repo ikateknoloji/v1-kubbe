@@ -218,55 +218,8 @@ class DatabaseSeeder extends Seeder
 
 
 /*     
-        OrderOfferFactory::new()
-        ->has(CustomerInfo::factory()->count(1))
-        ->has(OrderItem::factory()->count(3))
-        ->has(OrderImage::factory()->configureType('L')->count(1))
-        ->has(OrderImage::factory()->configureType('D')->count(1))
-        ->has(OrderImage::factory()->configureType('P')->count(1))
-        ->configureStatus('MO') 
-        ->configureInvoiceType('I') 
-        ->count(20)
-        ->create();
-
-        OrderOfferFactory::new()
-        ->has(CustomerInfo::factory()->count(1))
-        ->has(OrderItem::factory()->count(3))
-        ->has(OrderImage::factory()->configureType('L')->count(1))
-        ->has(OrderImage::factory()->configureType('D')->count(1))
-        ->has(OrderImage::factory()->configureType('P')->count(1))
-        ->has(InvoiceInfo::factory()->count(1))
-        ->configureStatus('MO') 
-        ->configureInvoiceType('C') 
-        ->count(20)
-        ->create();
-        
-        OrderOfferFactory::new()
-        ->has(CustomerInfo::factory()->count(1))
-        ->has(OrderItem::factory()->count(3))
-        ->has(OrderImage::factory()->configureType('L')->count(1))
-        ->has(OrderImage::factory()->configureType('D')->count(1))
-        ->has(OrderImage::factory()->configureType('P')->count(1))
-        ->configureStatus('OA') 
-        ->configureInvoiceType('I') 
-        ->count(20)
-        ->create();
-
-        OrderOfferFactory::new()
-        ->has(CustomerInfo::factory()->count(1))
-        ->has(OrderItem::factory()->count(3))
-        ->has(OrderImage::factory()->configureType('L')->count(1))
-        ->has(OrderImage::factory()->configureType('D')->count(1))
-        ->has(OrderImage::factory()->configureType('P')->count(1))
-        ->has(InvoiceInfo::factory()->count(1))
-        ->configureStatus('OA') 
-        ->configureInvoiceType('C') 
-        ->count(20)
-        ->create();
-
-
-
-        OrderOfferFactory::new()
+ 
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -278,7 +231,7 @@ class DatabaseSeeder extends Seeder
         ->create();
         
         
-        OrderOfferFactory::new()
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -295,7 +248,7 @@ class DatabaseSeeder extends Seeder
 
 
 /*
-        OrderOfferFactory::new()
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -307,7 +260,7 @@ class DatabaseSeeder extends Seeder
         ->count(20)
         ->create();
         
-        OrderOfferFactory::new()
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -321,8 +274,8 @@ class DatabaseSeeder extends Seeder
         ->create();
 */        
         
-/*
-        OrderOfferFactory::new()
+
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -335,7 +288,7 @@ class DatabaseSeeder extends Seeder
         ->count(20)
         ->create();
 
-        OrderOfferFactory::new()
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -349,7 +302,7 @@ class DatabaseSeeder extends Seeder
         ->count(20)
         ->create();   
 
-        OrderOfferFactory::new()
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -362,7 +315,7 @@ class DatabaseSeeder extends Seeder
         ->count(20)
         ->create();
 
-        OrderOfferFactory::new()
+        OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
         ->has(OrderImage::factory()->configureType('L')->count(1))
@@ -378,6 +331,6 @@ class DatabaseSeeder extends Seeder
         
         AdminNotification::factory()->count(10)->create();
 
-*/
+
     }
 }
