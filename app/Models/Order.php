@@ -42,7 +42,6 @@ class Order extends Model
         'is_rejected',
         'note',
         'offer_price',
-        // 'manufacturer_offer_price',
     ];
 
     protected $appends = ['original_status', 'status_color'];

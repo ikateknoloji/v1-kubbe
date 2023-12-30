@@ -21,11 +21,22 @@ class OrderItemFactory extends Factory
 
     public function definition(): array
     {
+        // 'product_type_id' ve 'product_type' alanlarından yalnızca biri dolu olacak
+        if (rand(0, 1) === 0) {
+            $productTypeId = ProductType::all()->random()->id;
+            $productType = null;
+        } else {
+            $productTypeId = null;
+            $productType = $this->faker->word;
+        }
+
         return [
             'order_id' => Order::factory(),
-            'product_type_id' => ProductType::all()->random()->id,
+            'product_type_id' => $productTypeId,
             'quantity' => $this->faker->randomNumber(2),
             'color' => $this->faker->colorName,
+            'unit_price' => $this->faker->randomFloat(2, 0, 1000),
+            'product_type' => $productType,
         ];
     }
 }
