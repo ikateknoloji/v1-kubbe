@@ -32,10 +32,10 @@ class OrderController extends Controller
     public function store(Request $request)
     {
 
-        
         try {
             // Gelen verileri doğrula
             $request->validate([
+                //
                 'order_name' => 'required|string',
                 'invoice_type' => 'required|in:I,C',
                 'offer_price' => 'required|numeric|min:0',
@@ -155,54 +155,7 @@ class OrderController extends Controller
      */
     public function update(Request $request, Order $order)
     {
-        try {
-        // Gelen verileri doğrula
-        $request->validate([
-            'order_name' => 'required|string',
-            'status' => 'sometimes|required|in:OC,DP,DA,P,PA,MS,MA,PP,PR,PD,PIT',
-            'manufacturer_id' => 'nullable|sometimes|required|exists:manufacturers,user_id',
-            'offer_price' => 'sometimes|required|numeric|min:0',
-            'invoice_type' => 'sometimes|required|in:I,C',
-            'is_rejected' => 'sometimes|required|in:A,R,C,CR,MR',
-            'note' => 'nullable|string',
-        ], [
-            'order_name' => 'Şipariş adı gereklidir',
-            'status.required' => 'Durum zorunludur.',
-            'status.in' => 'Geçersiz durum.',
-            'manufacturer_id.exists' => 'Geçersiz üretici ID.',
-            'offer_price.required' => 'Teklif fiyatı zorunludur.',
-            'offer_price.numeric' => 'Teklif fiyatı bir sayı olmalıdır.',
-            'offer_price.min' => 'Teklif fiyatı en az 0 olmalıdır.',
-            'invoice_type.required' => 'Fatura tipi zorunludur.',
-            'invoice_type.in' => 'Geçersiz fatura tipi.',
-            'is_rejected.required' => 'Red durumu zorunludur.',
-            'is_rejected.in' => 'Geçersiz red durumu.',
-        ]);
 
-        // Transaksiyon başlat
-        DB::beginTransaction();
-
-        // Siparişi güncelle
-        $order->update($request->only([
-            'status', 'manufacturer_id', 'offer_price', 'invoice_type', 'is_rejected','note','order_name'
-        ]));
-
-        // Event'i hemen broadcast et
-        broadcast(new OrderStatusChangedEvent($order, [
-                'title' => 'Sipariş Güncellendi',
-                'body' => 'Sipariş durumu güncellendi.',
-                'order' => $order->toArray(),
-            ]));
-
-            // Transaksiyonu tamamla
-            DB::commit();
-
-            // Başarılı güncelleme yanıtı
-            return response()->json(['order' => $order], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollback();
-            return response()->json(['errors' => $e->errors()], 422);
-        }
     }
 
 
