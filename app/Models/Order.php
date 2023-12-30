@@ -38,11 +38,11 @@ class Order extends Model
         'order_code',
         'status',
         'manufacturer_id',
-        'offer_price',
         'invoice_type',
         'is_rejected',
         'note',
-        'manufacturer_offer_price',
+        'offer_price',
+        // 'manufacturer_offer_price',
     ];
 
     protected $appends = ['original_status', 'status_color'];
@@ -60,8 +60,8 @@ class Order extends Model
              'P'  => 'Ödeme Aşaması',
              'PA' => 'Ödeme Alındı',
              'MS' => 'Üretici Seçimi',
-             'MO' => 'Üretici Teklifi',
-             'OA' => 'Teklifi Onayı',
+             // 'MO' => 'Üretici Teklifi',
+             // 'OA' => 'Teklifi Onayı',
              'PP' => 'Üretimde',
              'PR' => 'Ürün Hazır',
              'PIT' => 'Ürün Transfer Aşaması',
@@ -83,8 +83,8 @@ class Order extends Model
                 'P'  => '#0000FF', // Mavi
                 'PA' => '#800080', // Mor
                 'MS' => '#FFA500', // Turuncu
-                'MO' => '#808080', // Gri
-                'OA' => '#FF69B4', // Daha koyu Pembe
+                 // 'MO' => '#808080', // Gri
+                 //'OA' => '#FF69B4', // Daha koyu Pembe
                 'PP' => '#800000', // Maroon
                 'PR' => '#008B8B', // Daha koyu Aqua
                 'PIT' => '#000080', // Navy
@@ -103,8 +103,8 @@ class Order extends Model
             'P'  => 'Ödeme Aşaması',
             'PA' => 'Ödeme Alındı',
             'MS' => 'Üretici Seçimi',
-            'MO' => 'Üretici Teklifi',
-            'OA' => 'Teklifi Onayı',
+            // 'MO' => 'Üretici Teklifi',
+            // 'OA' => 'Teklifi Onayı',
             'PP' => 'Üretimde',
             'PR' => 'Ürün Hazır',
             'PIT' => 'Ürün Transfer Aşaması',

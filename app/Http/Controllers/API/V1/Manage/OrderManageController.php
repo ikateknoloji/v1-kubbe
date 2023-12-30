@@ -522,7 +522,6 @@ class OrderManageController extends Controller
         $rules = [
         'order_name' => 'required|string',
         'invoice_type' => 'required|in:I,C',
-        'offer_price' => 'required|numeric|min:0',
         'note' => 'nullable|string',
         'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
         'name' => 'required|string',
@@ -543,9 +542,6 @@ class OrderManageController extends Controller
             'order_name' => 'Şipariş adı gereklidir',
             'invoice_type.required' => 'Fatura tipi zorunludur.',
             'invoice_type.in' => 'Geçersiz fatura tipi.',
-            'offer_price.required' => 'Teklif fiyatı zorunludur.',
-            'offer_price.numeric' => 'Teklif fiyatı bir sayı olmalıdır.',
-            'offer_price.min' => 'Teklif fiyatı en az 0 olmalıdır.', 
             'image_url.image' => 'Geçersiz resim formatı.',
             'image_url.mimes' => 'Geçersiz resim MIME türü.',
             'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
@@ -579,17 +575,34 @@ class OrderManageController extends Controller
         try {
             // Gelen verileri doğrula
             $validatedData = $request->validate([
-                'product_type_id' => 'required|exists:product_types,id',
+                'product_type_id' => [
+                    function ($attribute, $value, $fail) use ($request) {
+                        if (empty($value) && empty($request->input('product_type'))) {
+                            $fail('Ürün tipi zorunludur.');
+                        }
+                    },
+                    'exists:product_types,id',
+                ],
+                'product_type' => [
+                    function ($attribute, $value, $fail) use ($request) {
+                        if (empty($value) && empty($request->input('product_type_id'))) {
+                            $fail('Ürün tipi zorunludur.');
+                        }
+                    },
+                ],
                 'quantity' => 'required|integer|min:1',
                 'color' => 'required|string',
+                'unit_price' => 'required|numeric|min:0', // eklenen sütun
             ], [
-                'product_type_id.required' => 'Ürün tipi zorunludur.',
                 'product_type_id.exists' => 'Geçersiz ürün tipi.',
                 'quantity.required' => 'Miktar zorunludur.',
                 'quantity.integer' => 'Miktar bir sayı olmalıdır.',
                 'quantity.min' => 'Miktar en az 1 olmalıdır.',
                 'color.required' => 'Renk zorunludur.',
                 'color.string' => 'Renk bir metin olmalıdır.',
+                'unit_price.required' => 'Birim başı teklif zorunludur.',
+                'unit_price.numeric' => 'Birim başı teklif bir sayı olmalıdır.',
+                'unit_price.min' => 'Birim başı teklif en az 0 olmalıdır.',
             ]);
     
             // Başarılı doğrulama yanıtı
@@ -602,4 +615,6 @@ class OrderManageController extends Controller
             return response()->json(['error' => $firstError], 422);
         }
     }
+    
+    
 }

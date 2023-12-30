@@ -11,13 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        // Not Alanı Eklenecek
+        /* 'MO', 'OA', */ 
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_name');
             $table->unsignedBigInteger('customer_id');
             $table->string('order_code');
-            $table->enum('status', ['OC','DP','DA', 'P' ,'PA', 'MS', 'MO', 'OA' , 'PP', 'PR', 'PIT', 'PD']); 
+            $table->enum('status', ['OC','DP','DA', 'P' ,'PA', 'MS','PP', 'PR', 'PIT', 'PD']); 
             $table->unsignedBigInteger('manufacturer_id')->nullable();
             $table->decimal('offer_price', 8, 2);
             $table->enum('invoice_type', ['I', 'C']);

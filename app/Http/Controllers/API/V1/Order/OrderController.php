@@ -40,42 +40,21 @@ class OrderController extends Controller
                 'invoice_type' => 'required|in:I,C',
                 'offer_price' => 'required|numeric|min:0',
                 'note' => 'nullable|string',
+                // Order Item start
                 'order_items' => 'required|array',
-                'order_items.*.product_type_id' => 'required|exists:product_types,id',
+                'order_items.*.product_type_id' => 'nullable|exists:product_types,id',
                 'order_items.*.quantity' => 'required|integer|min:1',
                 'order_items.*.color' => 'required|string',
+                'order_items.*.product_type' => 'nullable|string',
+                'order_items.*.unit_price' => 'required|numeric|min:0',
+                // Order Item end
                 'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+                //customer_infos start
                 'name' => 'required|string',
                 'surname' => 'required|string',
                 'phone' => ['required', 'string', 'regex:/^(\+90|0)?[1-9]{1}[0-9]{9}$/'],
                 'email' => 'nullable|email',
-            ], [
-                'order_name' => 'Şipariş adı gereklidir',
-                'invoice_type.required' => 'Fatura tipi zorunludur.',
-                'invoice_type.in' => 'Geçersiz fatura tipi.',
-                'offer_price.required' => 'Teklif fiyatı zorunludur.',
-                'offer_price.numeric' => 'Teklif fiyatı bir sayı olmalıdır.',
-                'offer_price.min' => 'Teklif fiyatı en az 0 olmalıdır.',
-                'order_items.required' => 'Sipariş öğeleri zorunludur.',
-                'order_items.array' => 'Sipariş öğeleri bir dizi olmalıdır.',
-                'order_items.*.product_type_id.required' => 'Her sipariş öğesi için ürün tipi ID zorunludur.',
-                'order_items.*.product_type_id.exists' => 'Geçersiz ürün tipi ID.',
-                'order_items.*.quantity.required' => 'Her sipariş öğesi için miktar zorunludur.',
-                'order_items.*.quantity.integer' => 'Miktar bir tam sayı olmalıdır.',
-                'order_items.*.quantity.min' => 'Miktar en az 1 olmalıdır.',
-                'order_items.*.color.required' => 'Her sipariş öğesi için renk zorunludur.',
-                'order_items.*.color.string' => 'Renk bir dize olmalıdır.',
-                'image_url.image' => 'Geçersiz resim formatı.',
-                'image_url.mimes' => 'Geçersiz resim MIME türü.',
-                'image_url.max' => 'Resim boyutu en fazla 2048 KB olmalıdır.',
-                'phone.required' => 'Telefon numarası zorunludur.',
-                'phone.string' => 'Telefon numarası bir dize olmalıdır.',
-                'phone.regex' => 'Geçersiz telefon numarası.',
-                'name.required' => 'Ad alanı zorunludur.',
-                'name.string' => 'Ad alanı bir dize olmalıdır.',
-                'surname.required' => 'Soyadı alanı zorunludur.',
-                'surname.string' => 'Soyadı alanı bir dize olmalıdır.',
-                'email.email' => 'Geçersiz e-posta adresi.',
+                //customer_infos start
             ]);
 
             // Transaksiyon başlat
@@ -96,8 +75,10 @@ class OrderController extends Controller
                 return new OrderItem([
                     'order_id' => $order->id,
                     'product_type_id' => $item['product_type_id'],
+                    'product_type' => $item['product_type'],
                     'quantity' => $item['quantity'],
                     'color' => $item['color'],
+                    'unit_price' => $item['unit_price'],
                 ]);
             });
     
