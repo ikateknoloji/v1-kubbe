@@ -274,7 +274,7 @@ class DatabaseSeeder extends Seeder
         ->create();
 */        
         
-
+/*
         OrderManufacturerFactory::new()
         ->has(CustomerInfo::factory()->count(1))
         ->has(OrderItem::factory()->count(3))
@@ -331,6 +331,6 @@ class DatabaseSeeder extends Seeder
         
         AdminNotification::factory()->count(10)->create();
 
-
+*/
     }
 }
