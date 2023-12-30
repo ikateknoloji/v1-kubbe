@@ -18,7 +18,7 @@ return new class extends Migration
             $table->integer('quantity');
             $table->string('color');
             $table->decimal('unit_price', 8, 2); 
-            $table->string('product_type')->nullable();
+            $table->string('type')->nullable();
             $table->timestamps();
 
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');

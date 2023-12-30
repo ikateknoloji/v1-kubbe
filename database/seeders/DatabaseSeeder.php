@@ -18,6 +18,9 @@ use App\Models\User;
 use Database\Factories\OrderManufacturerFactory;
 use Database\Factories\OrderOfferFactory;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
+use Faker\Factory as Faker;
 
 class DatabaseSeeder extends Seeder
 {
@@ -332,5 +335,47 @@ class DatabaseSeeder extends Seeder
         AdminNotification::factory()->count(10)->create();
 
 */
+
+$faker = Faker::create();
+
+$imagePath = 'public/images/image.png'; // Buradaki dosya yolu ve adını güncelleyin
+
+$product_categories = [
+        [
+            'category' => 'Mikrofon Süngeri',
+            'types' => ['Silindir', 'Üçgen', 'Kare', 'Mini', 'Eski silindir', 'Damla', 'Diğer'],
+            'image_url' => asset(Storage::url($imagePath)),
+            'path' => $faker->word,
+        ],
+        [
+            'category' => 'Kamera Süngeri',
+            'types' => ['11 cm', '14 cm', '16 cm', '18 cm', '21 cm', 'Diğer'],
+            'image_url' => asset(Storage::url($imagePath)),
+            'path' => $faker->word,
+        ],
+        [
+            'category' => 'Yaka Mikrofonu',
+            'types' => ['3 cm', '5 cm', 'Diğer'],
+            'image_url' => asset(Storage::url($imagePath)),
+            'path' => $faker->word,
+        ],
+    ];
+
+    foreach ($product_categories as $product_category) {
+        $product_category_id = DB::table('product_categories')->insertGetId([
+            'category' => $product_category['category'],
+            'image_url' => $product_category['image_url'],
+            'path' => $product_category['path']
+        ]);
+
+        foreach ($product_category['types'] as $product_type) {
+            DB::table('product_types')->insert([
+                'product_type' => $product_type,
+                'product_category_id' => $product_category_id,
+                'image_url' => asset(Storage::url($imagePath)),
+                'path' => $faker->word,
+            ]);
+        }
+    }
     }
 }
