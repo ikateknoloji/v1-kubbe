@@ -22,13 +22,16 @@ class OrderItemFactory extends Factory
 
     public function definition(): array
     {
-        $productTypeId = $this->faker->randomElement([null, ProductType::pluck('id')->toArray()]);
-        $productCategoryId = $productTypeId ? ProductType::find($productTypeId)->product_category_id : null;
+        $productCategory = ProductCategory::inRandomOrder()->first();
+        $productType = $productCategory->productTypes->random();
+
+        $productTypeId = $this->faker->randomElement([$productType->id, null]);
+        $productCategoryId = $productTypeId ? $productType->product_category_id : $productCategory->id;
 
         return [
             'order_id' => Order::factory(),
             'product_type_id' => $productTypeId,
-            'product_category_id' => $productCategoryId ?? ProductCategory::factory(),
+            'product_category_id' => $productCategoryId,
             'quantity' => $this->faker->numberBetween(1, 100),
             'color' => $this->faker->safeColorName,
             'unit_price' => $this->faker->randomFloat(2, 0, 1000),

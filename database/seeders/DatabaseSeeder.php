@@ -43,12 +43,8 @@ class DatabaseSeeder extends Seeder
         ->count(20)
         ->create(['user_type' => 'manufacturer']);
 
-
-        ProductCategory::factory()->has(ProductType::factory()->count(3))
-        ->count(10)
-        ->create()
-        ;
 */
+
 
 /*
         Order::factory()
@@ -336,7 +332,7 @@ class DatabaseSeeder extends Seeder
 
 */
 
-
+/*
 $faker = Faker::create();
 
 $imagePath = 'public/images/image.png'; // Buradaki dosya yolu ve adını güncelleyin
@@ -378,6 +374,14 @@ $product_categories = [
             ]);
         }
     }
+*/
+
+/*
+        ProductCategory::factory()->has(ProductType::factory()->count(3))
+        ->count(10)
+        ->create()
+        ;
+*/
     
     }
 }
