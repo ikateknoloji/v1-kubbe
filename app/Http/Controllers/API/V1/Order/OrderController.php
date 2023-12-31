@@ -41,12 +41,12 @@ class OrderController extends Controller
                 'offer_price' => 'required|numeric|min:0',
                 'note' => 'nullable|string',
                 // Order Item start
-                'order_items' => 'required|array',
-                'order_items.*.product_type_id' => 'nullable|exists:product_types,id',
-                'order_items.*.quantity' => 'required|integer|min:1',
-                'order_items.*.color' => 'required|string',
-                'order_items.*.product_type' => 'nullable|string',
-                'order_items.*.unit_price' => 'required|numeric|min:0',
+                'order_items.*.product_type_id' => ['nullable', 'exists:product_types,id'],
+                'order_items.*.product_category_id' => ['required', 'exists:product_categories,id'],
+                'order_items.*.quantity' => ['required', 'integer'],
+                'order_items.*.color' => ['required', 'string'],
+                'order_items.*.unit_price' => ['required', 'numeric'],
+                'order_items.*.type' => ['nullable', 'string'],
                 // Order Item end
                 'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
                 //customer_infos start
@@ -75,13 +75,15 @@ class OrderController extends Controller
                 return new OrderItem([
                     'order_id' => $order->id,
                     'product_type_id' => $item['product_type_id'],
-                    'product_type' => $item['product_type'],
+                    'product_category_id' => $item['product_category_id'],
+                    'type' => $item['type'],
                     'quantity' => $item['quantity'],
                     'color' => $item['color'],
                     'unit_price' => $item['unit_price'],
                 ]);
             });
     
+
             $order->orderItems()->saveMany($orderItems);
     
             // Fatura tipine göre ilgili fatura bilgileri ekleniyor
