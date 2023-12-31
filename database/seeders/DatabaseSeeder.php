@@ -336,6 +336,7 @@ class DatabaseSeeder extends Seeder
 
 */
 
+
 $faker = Faker::create();
 
 $imagePath = 'public/images/image.png'; // Buradaki dosya yolu ve adını güncelleyin
@@ -343,19 +344,19 @@ $imagePath = 'public/images/image.png'; // Buradaki dosya yolu ve adını günce
 $product_categories = [
         [
             'category' => 'Mikrofon Süngeri',
-            'types' => ['Silindir', 'Üçgen', 'Kare', 'Mini', 'Eski silindir', 'Damla', 'Diğer'],
+            'types' => ['Silindir', 'Üçgen', 'Kare', 'Mini', 'Eski silindir', 'Damla'],
             'image_url' => asset(Storage::url($imagePath)),
             'path' => $faker->word,
         ],
         [
             'category' => 'Kamera Süngeri',
-            'types' => ['11 cm', '14 cm', '16 cm', '18 cm', '21 cm', 'Diğer'],
+            'types' => ['11 cm', '14 cm', '16 cm', '18 cm', '21 cm'],
             'image_url' => asset(Storage::url($imagePath)),
             'path' => $faker->word,
         ],
         [
             'category' => 'Yaka Mikrofonu',
-            'types' => ['3 cm', '5 cm', 'Diğer'],
+            'types' => ['3 cm', '5 cm'],
             'image_url' => asset(Storage::url($imagePath)),
             'path' => $faker->word,
         ],
@@ -377,5 +378,6 @@ $product_categories = [
             ]);
         }
     }
+    
     }
 }

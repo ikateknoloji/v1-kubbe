@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\OrderItem;
 use App\Models\Order;
+use App\Models\ProductCategory;
 use App\Models\ProductType;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -21,22 +22,17 @@ class OrderItemFactory extends Factory
 
     public function definition(): array
     {
-        // 'product_type_id' ve 'product_type' alanlarından yalnızca biri dolu olacak
-        if (rand(0, 1) === 0) {
-            $productTypeId = ProductType::all()->random()->id;
-            $productType = null;
-        } else {
-            $productTypeId = null;
-            $productType = $this->faker->word;
-        }
+        $productTypeId = $this->faker->randomElement([null, ProductType::pluck('id')->toArray()]);
+        $productCategoryId = $productTypeId ? ProductType::find($productTypeId)->product_category_id : null;
 
         return [
             'order_id' => Order::factory(),
             'product_type_id' => $productTypeId,
-            'quantity' => $this->faker->randomNumber(2),
-            'color' => $this->faker->colorName,
+            'product_category_id' => $productCategoryId ?? ProductCategory::factory(),
+            'quantity' => $this->faker->numberBetween(1, 100),
+            'color' => $this->faker->safeColorName,
             'unit_price' => $this->faker->randomFloat(2, 0, 1000),
-            'product_type' => $productType,
+            'type' => $productTypeId ? null : $this->faker->word,
         ];
     }
 }
