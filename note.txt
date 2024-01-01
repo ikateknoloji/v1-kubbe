@@ -1,0 +1,66 @@
+   /**
+     * Üreticinin Teklifi oluşturma
+     * ? manufacturer
+     * @param Request $request
+     * @param Order $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function offerManufacturer(Request $request, Order $order)
+    {
+        // Giriş yapan kullanıcının üretici olup olmadığını kontrol et
+        $manufacturerId = Auth::id();
+    
+        // Order'ın manufacturer_id'si ile giriş yapan üreticinin user_id'sini kontrol et
+        if ($order->manufacturer_id != $manufacturerId) {
+            return response()->json(['error' => 'Bu işlemi sadece ilgili üretici gerçekleştirebilir.'], 403);
+        }
+    
+        // Sipariş durumunu kontrol et, sadece 'PA' durumundakileri işle
+        if ($order->status === 'Üretici Seçimi') {
+            // Üreticiyi onayla ve sipariş durumunu 'MO' (Üretici Onayı) olarak güncelle
+            $order->update([
+                'status' => 'MO',
+                'manufacturer_offer_price' => $request->input('manufacturer_offer_price'),
+            ]);
+    
+            broadcast(new AdminNotificationEvent([
+                'title' => 'Sipariş Teklifi',
+                'body' => 'Sipariş üretici tarafından teklif oluşturuldu.',
+                'order' => $order->toArray(),
+            ]));
+    
+            return response()->json(['message' => 'Üretici onayı yapıldı.'], 200);
+        }
+    
+        return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için üretici onayı yapılamıyor.'], 400);
+    }
+
+    /**
+     * Üreticinin Teklifini kabul etme
+     * ? admin
+     * @param Request $request
+     * @param Order $order
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function offerApproveOrder(Order $order)
+    {
+        // Sipariş durumunu kontrol et, sadece 'MO' durumundakileri işle
+        if ($order->status === 'Üretici Teklifi') {
+            // Sipariş durumunu 'OA' (Order Approved) olarak güncelle
+            $order->update([
+                'status' => 'OA',
+            ]);
+
+            broadcast(new ManufacturerNotificationEvent (
+                $order->manufacturer_id ,[
+                'title' => 'Teklif Kabul Edildi',
+                'body' => 'Teklif kabul edildi üretim aşamasına geçin lütfen.',
+                'order' => $order->toArray(),
+            ]));
+
+
+            return response()->json(['message' => 'Sipariş onayı yapıldı.'], 200);
+        }
+
+        return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için onay yapılamıyor.'], 400);
+    }

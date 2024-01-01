@@ -58,7 +58,7 @@ class OrderManageController extends Controller
 
             // Gelen resim dosyasını kontrol et
             $request->validate([
-                'design_image' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048',
+                'design_image' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
             ], [
                 'design_image.required' => 'Lütfen bir tasarım resmi yükleyin.',
                 'design_image.image' => 'Dosya bir resim olmalıdır.',
@@ -203,7 +203,32 @@ class OrderManageController extends Controller
             // Gelen üretici bilgilerini kontrol et
             $request->validate([
                 'manufacturer_id' => 'required|exists:manufacturers,user_id',
+                'order_logo' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf',
+            ], 
+            [
+                'order_logo.required' => 'Logo çıktısı dosyası gereklidir.',
+                'order_logo.mimes' => 'Dosya formatı jpeg, png, jpg, gif, svg veya pdf olmalıdır.',
+                'order_logo.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
+
+            // Resim dosyasını yükle ve bilgileri al
+            $image = $request->file('order_logo');
+            $imageName = 'order_logo' . $order->id . '.' . $image->getClientOriginalExtension();
+            $path = $image->storeAs('public/images/order_logo', $imageName);
+
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+
+            // OrderImage modeline order_id'yi ekleyerek kaydet
+            $orderImage = new OrderImage([
+                'type' => 'LP', // Ödeme tipi
+                'image_url' => asset(Storage::url($path)),
+                'path' => $path,
+                'mime_type' => $mime_type, // MIME tipini kaydet
+                'order_id' => $order->id,
+            ]);
+
+            $order->orderImages()->save($orderImage);
 
             // Üreticiyi seç ve sipariş durumunu 'MS' (Üretici Seçimi) olarak güncelle
             $order->update([
@@ -224,72 +249,7 @@ class OrderManageController extends Controller
         return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için üretici seçimi yapılamıyor.'], 400);
     }
 
-    /**
-     * Üreticinin Teklifi oluşturma
-     * ? manufacturer
-     * @param Request $request
-     * @param Order $order
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function offerManufacturer(Request $request, Order $order)
-    {
-        // Giriş yapan kullanıcının üretici olup olmadığını kontrol et
-        $manufacturerId = Auth::id();
     
-        // Order'ın manufacturer_id'si ile giriş yapan üreticinin user_id'sini kontrol et
-        if ($order->manufacturer_id != $manufacturerId) {
-            return response()->json(['error' => 'Bu işlemi sadece ilgili üretici gerçekleştirebilir.'], 403);
-        }
-    
-        // Sipariş durumunu kontrol et, sadece 'PA' durumundakileri işle
-        if ($order->status === 'Üretici Seçimi') {
-            // Üreticiyi onayla ve sipariş durumunu 'MO' (Üretici Onayı) olarak güncelle
-            $order->update([
-                'status' => 'MO',
-                'manufacturer_offer_price' => $request->input('manufacturer_offer_price'),
-            ]);
-    
-            broadcast(new AdminNotificationEvent([
-                'title' => 'Sipariş Teklifi',
-                'body' => 'Sipariş üretici tarafından teklif oluşturuldu.',
-                'order' => $order->toArray(),
-            ]));
-    
-            return response()->json(['message' => 'Üretici onayı yapıldı.'], 200);
-        }
-    
-        return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için üretici onayı yapılamıyor.'], 400);
-    }
-
-    /**
-     * Üreticinin Teklifini kabul etme
-     * ? admin
-     * @param Request $request
-     * @param Order $order
-     * @return \Illuminate\Http\JsonResponse
-     */
-    public function offerApproveOrder(Order $order)
-    {
-        // Sipariş durumunu kontrol et, sadece 'MO' durumundakileri işle
-        if ($order->status === 'Üretici Teklifi') {
-            // Sipariş durumunu 'OA' (Order Approved) olarak güncelle
-            $order->update([
-                'status' => 'OA',
-            ]);
-
-            broadcast(new ManufacturerNotificationEvent (
-                $order->manufacturer_id ,[
-                'title' => 'Teklif Kabul Edildi',
-                'body' => 'Teklif kabul edildi üretim aşamasına geçin lütfen.',
-                'order' => $order->toArray(),
-            ]));
-
-
-            return response()->json(['message' => 'Sipariş onayı yapıldı.'], 200);
-        }
-
-        return response()->json(['error' => 'Sipariş durumu ' . $order->status . ' olduğu için onay yapılamıyor.'], 400);
-    }
 
     /**
      * Üretici onayından sonra üretim sürecini başlat.
@@ -306,7 +266,7 @@ class OrderManageController extends Controller
         }   
 
         // Sipariş durumunu kontrol et, sadece 'OA' (Teklifi Onayı) durumundakileri güncelle
-        if ($order->status === 'Teklifi Onayı') {
+        if ($order->status === 'Üretici Seçimi') {
             // Sipariş durumunu 'PP' (Üretimde) olarak güncelle
             $order->update(['status' => 'PP']); 
                 
@@ -573,45 +533,39 @@ class OrderManageController extends Controller
     public function validateOrderItem(Request $request)
     {
         try {
-            // Gelen verileri doğrula
+            // Validate incoming data
             $validatedData = $request->validate([
-                'product_type_id' => [
-                    function ($attribute, $value, $fail) use ($request) {
-                        if (empty($value) && empty($request->input('product_type'))) {
-                            $fail('Ürün tipi zorunludur.');
-                        }
-                    },
-                    'exists:product_types,id',
-                ],
-                'product_type' => [
-                    function ($attribute, $value, $fail) use ($request) {
-                        if (empty($value) && empty($request->input('product_type_id'))) {
-                            $fail('Ürün tipi zorunludur.');
-                        }
-                    },
-                ],
+                'product_type_id' => 'nullable|exists:product_types,id',
+                'type' => 'nullable|string',
+                'product_category_id' => 'required|exists:product_categories,id',
                 'quantity' => 'required|integer|min:1',
                 'color' => 'required|string',
-                'unit_price' => 'required|numeric|min:0', // eklenen sütun
+                'unit_price' => 'required|numeric|min:0',
             ], [
                 'product_type_id.exists' => 'Geçersiz ürün tipi.',
-                'quantity.required' => 'Miktar zorunludur.',
-                'quantity.integer' => 'Miktar bir sayı olmalıdır.',
+                'product_category_id.required' => 'Ürün kategorisi gereklidir.',
+                'product_category_id.exists' => 'Geçersiz ürün kategorisi.',
+                'quantity.required' => 'Miktar gereklidir.',
+                'quantity.integer' => 'Miktar bir tam sayı olmalıdır.',
                 'quantity.min' => 'Miktar en az 1 olmalıdır.',
-                'color.required' => 'Renk zorunludur.',
+                'color.required' => 'Renk gereklidir.',
                 'color.string' => 'Renk bir metin olmalıdır.',
-                'unit_price.required' => 'Birim başı teklif zorunludur.',
-                'unit_price.numeric' => 'Birim başı teklif bir sayı olmalıdır.',
-                'unit_price.min' => 'Birim başı teklif en az 0 olmalıdır.',
+                'unit_price.required' => 'Birim fiyat gereklidir.',
+                'unit_price.numeric' => 'Birim fiyat bir sayı olmalıdır.',
+                'unit_price.min' => 'Birim fiyat en az 0 olmalıdır.',
             ]);
+
+            if (empty($request->input('product_type_id')) && empty($request->input('type'))) {
+                return response()->json(['error' => 'Ürün tipi zorunludur.'], 422);
+            }
     
-            // Başarılı doğrulama yanıtı
+            // Successful validation response
             return response()->json(['message' => 'Doğrulama başarılı.'], 200);
         } catch (\Illuminate\Validation\ValidationException $e) {
-            // İlk hata mesajını al
+            // Get the first error message
             $firstError = Arr::first($e->errors())[0];
     
-            // Hata yanıtı döndür
+            // Return error response
             return response()->json(['error' => $firstError], 422);
         }
     }
