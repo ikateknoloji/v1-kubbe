@@ -95,6 +95,11 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('{categoryId}/types', [ProductTypeController::class, 'getProductTypesByCategoryId']);
       });
     
+    Route::apiResource('customers', CustomerController::class);
+      // TODO: Müşteri resmini güncellemek için özel bir rota.
+    Route::post('info/{customer}/update-image', [CustomerController::class, 'updateImage']);
+
+    
     /**
      * ? Admin kullanıcısı için oluşturulmuş korumalı rotalardır.
      * TODO: Sadece admin kullanıcısı ile işlemleri gerçekleştir.
@@ -109,17 +114,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         */
 
 
-/*
-        // Product Categories
-        Route::group(['prefix' => 'category'], function () {
-          // Ürün kategorileri için kaynak rotalarını tanımlar.
-          Route::apiResource('product-categories', ProductCategoryController::class);
 
-          // Ürün kategorisi resmini güncellemek için özel bir rota.
-          Route::post('{productCategory}/update-image', [ProductCategoryController::class, 'updateImage']);
-        });
-*/
-        
 
         
         // Product Types
@@ -137,11 +132,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::post('/notifications/{id}/read', [NotificationController::class, 'markAsRead']);
           Route::post('/notifications/read/all', [NotificationController::class, 'markAllAsRead']);
         });
-
-
-        Route::apiResource('customers', CustomerController::class);
-          // TODO: Müşteri resmini güncellemek için özel bir rota.
-          Route::post('{customer}/update-image', [CustomerController::class, 'updateImage']);
 
 
         /**
@@ -246,6 +236,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
      */
     Route::middleware(['user_permission:customer'])->group(function () {
         
+        Route::get('/customer-info', function (Request $request) {
+          $user = $request->user();
+          $user->customer;
+      
+          return $user;
+        });
+
         /**
          * ? Müşteri bilgileri düzenleme resim ekleme veya güncelleme
          * TODO: Kullanıcı bilgileri ekle ve düzenle.

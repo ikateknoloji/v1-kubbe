@@ -221,7 +221,7 @@ class OrderManageController extends Controller
 
             // OrderImage modeline order_id'yi ekleyerek kaydet
             $orderImage = new OrderImage([
-                'type' => 'LP', // Ödeme tipi
+                'type' => 'PL', // Ödeme tipi
                 'image_url' => asset(Storage::url($path)),
                 'path' => $path,
                 'mime_type' => $mime_type, // MIME tipini kaydet

@@ -202,7 +202,7 @@ class CustomerController extends Controller
 
                 // Eski resmi sil
                 if ($customer->path) {
-                    Storage::disk('public')->delete($customer->path);
+                   // Storage::disk('public')->delete($customer->path);
                 }
 
                 // Yeni resmi kaydet

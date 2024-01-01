@@ -162,7 +162,7 @@ class GetOrderController extends Controller
         
         // İlgili resim tiplerini filtreleme
         $filteredImages = $order->orderImages
-            ->whereIn('type', ['L', 'D','P','PR','SC'])
+            ->whereIn('type', ['L', 'D','P','PR','SC','PL'])
             ->groupBy('type')
             ->map(function ($images) {
                 return $images->map(function ($image) {
