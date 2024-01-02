@@ -57,6 +57,13 @@ Route::post('/check-token', [AuthController::class, 'checkToken']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+  Route::get('/logout', function (Request $request) {
+    $request->user()->currentAccessToken()->delete();
+
+    return response()->json([
+        'message' => 'Successfully logged out'
+    ]);
+  });
 
 
     /**
@@ -68,8 +75,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
     
     // Kullanıcının şifresini güncelleme için rota
     Route::post('/update-password', [PasswordResetController::class, 'updatePassword']);
-
-
 
 
     /**
@@ -89,19 +94,18 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/validate-form', [OrderManageController::class, 'validateForms']);
     Route::post('/validate-order-item', [OrderManageController::class, 'validateOrderItem']);
 
-      // Product Categories
-      Route::group(['prefix' => 'order/category'], function () {
+    // Product Categories
+    Route::group(['prefix' => 'order/category'], function () {
         // Ürün kategorileri için kaynak rotalarını tanımlar.
         Route::apiResource('product-categories', ProductCategoryController::class);
         
         Route::get('{categoryId}/types', [ProductTypeController::class, 'getProductTypesByCategoryId']);
-      });
+    });
     
     Route::apiResource('customers', CustomerController::class);
-      // TODO: Müşteri resmini güncellemek için özel bir rota.
+    // TODO: Müşteri resmini güncellemek için özel bir rota.
     Route::post('info/{customer}/update-image', [CustomerController::class, 'updateImage']);
 
-    
     /**
      * ? Admin kullanıcısı için oluşturulmuş korumalı rotalardır.
      * TODO: Sadece admin kullanıcısı ile işlemleri gerçekleştir.
@@ -301,8 +305,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });    
     });
     
-
-
 
 
 

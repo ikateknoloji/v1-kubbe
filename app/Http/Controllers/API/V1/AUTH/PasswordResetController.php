@@ -9,6 +9,8 @@ use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
+use Laravel\Sanctum\PersonalAccessToken;
+
 class PasswordResetController extends Controller
 {
     /**
@@ -59,37 +61,38 @@ class PasswordResetController extends Controller
      */
     public function resetPasswordWithTempPassword(Request $request)
     {
-             // Gelen verileri doğrula
-             $request->validate([
-                'email' => 'required|email',
-                'temp_password' => 'required',
-                'new_password' => 'required|min:8|confirmed',
-            ], [
-                'email.required' => 'E-posta adresi gereklidir.',
-                'email.email' => 'Geçerli bir e-posta adresi girilmelidir.',
-                'temp_password.required' => 'Geçici şifre gereklidir.',
-                'new_password.required' => 'Yeni şifre gereklidir.',
-                'new_password.min' => 'Yeni şifre en az :min karakter uzunluğunda olmalıdır.',
-                'new_password.confirmed' => 'Yeni şifre doğrulama eşleşmiyor.',
-            ]);
-            
-     
-         // E-posta adresine göre kullanıcıyı bul
-         $user = User::where('email', $request->email)->first();
-     
-         // Kullanıcı yoksa veya geçici şifre yanlışsa hata mesajı döndür
-         if (!$user || !Hash::check($request->temp_password, $user->password)) {
-             return response()->json(['message' => 'Kullanıcı bulunamadı veya geçici şifre yanlış'], 404);
-         }
-     
-         // Kullanıcının şifresini ve is_temp_password alanını güncelle
-         $user->fill([
-             'password' => Hash::make($request->new_password),
-             'is_temp_password' => false
-         ])->save();
-
-         // Başarılı şifre sıfırlama mesajı döndür
-         return response()->json(['message' => 'Şifre başarıyla sıfırlandı'], 200);
+        // Gelen verileri doğrula
+        $request->validate([
+            'temp_password' => 'required',
+            'new_password' => 'required|min:8|confirmed',
+        ]);
+    
+        // Token'ı başlık bilgisinden al
+        $token = $request->bearerToken();
+    
+        if ($token) {
+            // Token'ı bulun
+            $tokenModel = PersonalAccessToken::findToken($token);
+    
+            if ($tokenModel && Hash::check($request->temp_password, $tokenModel->tokenable->password)) {
+                // Token geçerli ve geçici şifre doğru
+                $user = $tokenModel->tokenable;
+    
+                // Kullanıcının şifresini güncelle
+                $user->fill([
+                    'password' => Hash::make($request->new_password),
+                ])->save();
+    
+                // Başarılı şifre güncelleme mesajı döndür
+                return response()->json(['message' => 'Şifre başarıyla güncellendi'], 200);
+            } else {
+                // Token geçerli değil veya geçici şifre yanlış
+                return response()->json(['message' => 'Token geçerli değil veya geçici şifre yanlış'], 401);
+            }
+        } else {
+            // Token sağlanmadı
+            return response()->json(['message' => 'Token sağlanmadı'], 400);
+        }
     }
 
 

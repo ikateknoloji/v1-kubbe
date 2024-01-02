@@ -29,9 +29,10 @@ class AuthController extends Controller
             // Kullanıcı tipine göre bir token oluşturur
             $token =  $user->createToken('ApiToken')->plainTextToken;
     
-            // Kullanıcı tipini ve token'ı JSON olarak döndürür
+            // Kullanıcı tipini, token'ı ve is_temp_password değerini JSON olarak döndürür
             return response()->json([
                 'token' => $token,
+                'is_temp_password' => $user->is_temp_password,
             ]);
         }
     
@@ -128,7 +129,14 @@ class AuthController extends Controller
     
             if ($tokenModel) {
                 // Token geçerli
-                return response()->json(['message' => 'Token geçerli']);
+                // Token'ı oluşturan kullanıcıyı alır
+                $user = $tokenModel->tokenable;
+    
+                // Kullanıcının is_temp_password değerini döndürür
+                return response()->json([
+                    'message' => 'Token geçerli',
+                    'is_temp_password' => $user->is_temp_password,
+                ]);
             } else {
                 // Token geçerli değil
                 return response()->json(['message' => 'Token geçerli değil'], 401);
@@ -138,5 +146,8 @@ class AuthController extends Controller
             return response()->json(['message' => 'Token sağlanmadı'], 400);
         }
     }
+    
+    
+    
     
 }
