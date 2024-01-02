@@ -101,30 +101,39 @@ class PasswordResetController extends Controller
      */
     public function updatePassword(Request $request)
     {
-        // Gelen verileri doğrula
-        $request->validate([
-            'current_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
-        ], [
-            'current_password.required' => 'Mevcut şifre gereklidir.',
-            'new_password.required' => 'Yeni şifre gereklidir.',
-            'new_password.min' => 'Yeni şifre en az :min karakter uzunluğunda olmalıdır.',
-            'new_password.confirmed' => 'Yeni şifre doğrulama eşleşmiyor.',
-        ]);
+        try {
+            // Laravel Sanctum ile oturum açan kullanıcıyı alır
+            $user = $request->user();
     
-        // Laravel Sanctum ile oturum açan kullanıcıyı alır
-        $user = $request->user();
+            // Gelen verileri doğrula
+            $validatedData = $request->validate([
+                'current_password' => 'required',
+                'new_password' => 'required|min:8|confirmed',
+            ],[
+                'current_password.required' => 'Mevcut şifre alanı gereklidir.',
+                'new_password.required' => 'Yeni şifre alanı gereklidir.',
+                'new_password.min' => 'Yeni şifreniz en az :min karakter uzunluğunda olmalıdır.',
+                'new_password.confirmed' => 'Yeni şifreniz eşleşmiyor.',
+            ]);
     
-        // Mevcut şifre yanlışsa hata döndür
-        if (!Hash::check($request->current_password, $user->password)) {
-            return response()->json(['error' => 'Mevcut şifre yanlış'], 401);
+            // Mevcut şifre yanlışsa hata döndür
+            if (!Hash::check($validatedData['current_password'], $user->password)) {
+                return response()->json(['error' => 'Mevcut şifre yanlış'], 401);
+            }
+    
+            // Kullanıcının şifresini güncelle ve kaydet
+            $user->update(['password' => Hash::make($validatedData['new_password'])]);
+    
+            // Başarılı mesajı döndür
+            return response()->json(['message' => 'Şifre başarıyla güncellendi'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            // Doğrulama hatası oluştuğunda ilk hata mesajını döndür
+            return response()->json(['error' => $e->validator->errors()->first()], 422);
+        } catch (\Exception $e) {
+            // Diğer hatalar için genel hata mesajı döndür
+            return response()->json(['error' => 'Bir hata oluştu, lütfen daha sonra tekrar deneyin.'], 500);
         }
-    
-        // Kullanıcının şifresini güncelle ve kaydet
-        $user->update(['password' => Hash::make($request->new_password)]);
-    
-        // Başarılı mesajı döndür
-        return response()->json(['message' => 'Şifre başarıyla güncellendi'], 200);
     }
+    
 
 }

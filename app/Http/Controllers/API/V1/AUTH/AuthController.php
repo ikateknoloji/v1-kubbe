@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\Support\Facades\DB;
+use Laravel\Sanctum\PersonalAccessToken;
 
 
 class AuthController extends Controller
@@ -114,6 +115,27 @@ class AuthController extends Controller
         }  catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollback();
             return response()->json(['errors' => $e->errors()], 422);
+        }
+    }
+
+    public function checkToken(Request $request)
+    {
+        $token = $request->input('token');
+    
+        if ($token) {
+            // Token'ı bulun
+            $tokenModel = PersonalAccessToken::findToken($token);
+    
+            if ($tokenModel) {
+                // Token geçerli
+                return response()->json(['message' => 'Token geçerli']);
+            } else {
+                // Token geçerli değil
+                return response()->json(['message' => 'Token geçerli değil'], 401);
+            }
+        } else {
+            // Token sağlanmadı
+            return response()->json(['message' => 'Token sağlanmadı'], 400);
         }
     }
     

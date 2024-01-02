@@ -52,6 +52,8 @@ Route::post('/broadcasting/auth', function (Request $request) {
   return Broadcast::auth($request);
 });
 
+Route::post('/check-token', [AuthController::class, 'checkToken']);
+
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
