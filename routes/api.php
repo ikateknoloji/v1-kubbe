@@ -44,6 +44,7 @@ Route::get('/download-image/{imageId}', [GetOrderController::class, 'downloadIma
 
 // Kullanıcı girişi için rota
 Route::post('/login', [AuthController::class, 'login']);
+Route::post('/user-login', [AuthController::class, 'Userlogin']);
 
 // Şifre sıfırlama için rota
 Route::post('/reset-password', [PasswordResetController::class, 'resetPassword']);

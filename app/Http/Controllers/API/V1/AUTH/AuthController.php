@@ -119,6 +119,35 @@ class AuthController extends Controller
         }
     }
 
+    public function Userlogin(Request $request)
+    {
+        // Kullanıcının e-posta ve şifresini istekten alır
+        $credentials = $request->only('email', 'password');
+    
+        // Kullanıcının kimlik bilgilerini kontrol eder
+        if (Auth::attempt($credentials)) {
+            // Kullanıcının e-postasına göre kullanıcıyı bulur
+            $user = User::where('email', $request->email)->first();
+        
+            // Kullanıcı tipine göre bir token oluşturur
+            $token =  $user->createToken('ApiToken')->plainTextToken;
+        
+            // Kullanıcının customers ve manufacturers tablolarında bir kaydının olup olmadığını kontrol eder
+            $recordExists = (bool) DB::table('customers')->where('user_id', $user->id)->exists() || DB::table('manufacturers')->where('user_id', $user->id)->exists();
+        
+            // Kullanıcı tipini, token'ı, is_temp_password değerini ve record_exists değerini JSON olarak döndürür
+            return response()->json([
+                'token' => $token,
+                'is_temp_password' => (bool) $user->is_temp_password,
+                'record_exists' => $recordExists,
+            ]);
+        }
+    
+        // Kimlik bilgileri geçersizse hata mesajı döndürür
+        return response()->json(['error' => 'Geçersiz Kullanıcı bilgileri'], 401);
+    }
+    
+
     public function checkToken(Request $request)
     {
         $token = $request->input('token');
@@ -133,19 +162,27 @@ class AuthController extends Controller
                 $user = $tokenModel->tokenable;
     
                 // Kullanıcının is_temp_password değerini döndürür
+                $isTempPassword = $user->is_temp_password;
+    
+                // Kullanıcının customers ve manufacturers tablolarında bir kaydının olup olmadığını kontrol eder
+                $recordExists = DB::table('customers')->where('user_id', $user->id)->exists() || DB::table('manufacturers')->where('user_id', $user->id)->exists();
+    
                 return response()->json([
-                    'message' => 'Token geçerli',
-                    'is_temp_password' => $user->is_temp_password,
+                    'token' => true,
+                    'is_temp_password' => $isTempPassword,
+                    'record_exists' => $recordExists,
                 ]);
-            } else {
-                // Token geçerli değil
-                return response()->json(['message' => 'Token geçerli değil'], 401);
-            }
-        } else {
-            // Token sağlanmadı
-            return response()->json(['message' => 'Token sağlanmadı'], 400);
-        }
+            } 
+        } 
+    
+        // Token geçerli değil veya sağlanmadı
+        return response()->json([
+            'token' => false,
+            'message' => 'Token geçerli değil veya sağlanmadı'
+        ], 401);
     }
+    
+    
     
     
     
