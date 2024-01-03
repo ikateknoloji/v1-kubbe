@@ -71,7 +71,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
      * TODO: Test amaçlı postman üzerinde istekler gerçekleştir
      */
     // Geçici şifre ile şifre sıfırlama için rota
-    Route::post('/reset-password/temp-password', [PasswordResetController::class, 'resetPasswordWithTempPassword']);
+    Route::post('/temp-password', [PasswordResetController::class, 'resetPasswordWithTempPassword']);
     
     // Kullanıcının şifresini güncelleme için rota
     Route::post('/update-password', [PasswordResetController::class, 'updatePassword']);

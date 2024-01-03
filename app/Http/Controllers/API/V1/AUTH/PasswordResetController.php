@@ -61,40 +61,51 @@ class PasswordResetController extends Controller
      */
     public function resetPasswordWithTempPassword(Request $request)
     {
-        // Gelen verileri doğrula
-        $request->validate([
-            'temp_password' => 'required',
-            'new_password' => 'required|min:8|confirmed',
-        ]);
+        try {
+            // Gelen verileri doğrula
+            $request->validate([
+                'temp_password' => 'required',
+                'new_password' => 'required|min:8|confirmed',
+            ], [
+                'temp_password.required' => 'Geçici şifre gereklidir',
+                'new_password.required' => 'Yeni şifre gereklidir',
+                'new_password.min' => 'Yeni şifre en az 8 karakter olmalıdır',
+                'new_password.confirmed' => 'Yeni şifreler eşleşmiyor',
+            ]);
+
     
-        // Token'ı başlık bilgisinden al
-        $token = $request->bearerToken();
+            // Token'ı başlık bilgisinden al
+            $token = $request->bearerToken();
     
-        if ($token) {
-            // Token'ı bulun
-            $tokenModel = PersonalAccessToken::findToken($token);
+            if ($token) {
+                // Token'ı bulun
+                $tokenModel = PersonalAccessToken::findToken($token);
     
-            if ($tokenModel && Hash::check($request->temp_password, $tokenModel->tokenable->password)) {
-                // Token geçerli ve geçici şifre doğru
-                $user = $tokenModel->tokenable;
+                if ($tokenModel && Hash::check($request->temp_password, $tokenModel->tokenable->password)) {
+                    // Token geçerli ve geçici şifre doğru
+                    $user = $tokenModel->tokenable;
     
-                // Kullanıcının şifresini güncelle
-                $user->fill([
-                    'password' => Hash::make($request->new_password),
-                ])->save();
+                    // Kullanıcının şifresini güncelle
+                    $user->fill([
+                        'password' => Hash::make($request->new_password),
+                    ])->save();
     
-                // Başarılı şifre güncelleme mesajı döndür
-                return response()->json(['message' => 'Şifre başarıyla güncellendi'], 200);
+                    // Başarılı şifre güncelleme mesajı döndür
+                    return response()->json(['message' => 'Şifre başarıyla güncellendi'], 200);
+                } else {
+                    // Token geçerli değil veya geçici şifre yanlış
+                    return response()->json(['message' => 'Token geçerli değil veya geçici şifre yanlış'], 401);
+                }
             } else {
-                // Token geçerli değil veya geçici şifre yanlış
-                return response()->json(['message' => 'Token geçerli değil veya geçici şifre yanlış'], 401);
+                // Token sağlanmadı
+                return response()->json(['message' => 'Token sağlanmadı'], 400);
             }
-        } else {
-            // Token sağlanmadı
-            return response()->json(['message' => 'Token sağlanmadı'], 400);
+        } catch (\Exception $e) {
+            // Hata oluştu
+            return response()->json(['error' => $e->getMessage()], 500);
         }
     }
-
+    
 
     /**
      * Kullanıcının şifresini günceller.
