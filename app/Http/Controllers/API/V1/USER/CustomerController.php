@@ -37,38 +37,36 @@ class CustomerController extends Controller
         try {
             // Veritabanı işlemlerini transaksiyon içinde gerçekleştir
             DB::beginTransaction();
-
+        
             // Gelen istek verilerini doğrula
             $validatedData = $request->validate([
                 'name' => 'required|string',
                 'surname' => 'required|string',
                 'phone' => 'required|string',
-                'tax_number' => 'required|string',
-                'tax_office' => 'required|string',
-                'company_name' => 'required|string',
+                'tax_number' => 'nullable|string',
+                'tax_office' => 'nullable|string',
+                'company_name' => 'nullable|string',
                 'address' => 'required|string',
                 'city' => 'required|string',
                 'district' => 'required|string',
                 'country' => 'required|string',
-                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'image_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ], [
                 'name.required' => 'Ad alanı gereklidir.',
                 'surname.required' => 'Soyad alanı gereklidir.',
                 'phone.required' => 'Telefon alanı gereklidir.',
-                'tax_number.required' => 'Vergi numarası alanı gereklidir.',
-                'tax_office.required' => 'Vergi dairesi alanı gereklidir.',
-                'company_name.required' => 'Şirket adı alanı gereklidir.',
                 'address.required' => 'Adres alanı gereklidir.',
                 'city.required' => 'Şehir alanı gereklidir.',
                 'district.required' => 'İlçe alanı gereklidir.',
                 'country.required' => 'Ülke alanı gereklidir.',
                 'image_url.image' => 'Geçerli bir resim dosyası yükleyin.',
+                'image_url.required' => 'Bir resim dosyası yükleyin.',
                 'image_url.mimes' => 'Resim dosyası formatı jpeg, png, jpg, gif veya svg olmalıdır.',
                 'image_url.max' => 'Resim dosyası 2048 KB boyutundan büyük olmamalıdır.',
             ]);
             
             $validatedData['user_id'] = Auth::id();
-
+        
             if ($request->hasFile('image_url')) {
                 $image = $request->file('image_url');
                 $imageName = $validatedData['user_id'] .'.'. $image->getClientOriginalExtension();
@@ -77,13 +75,13 @@ class CustomerController extends Controller
                 $validatedData['image_url'] = asset(Storage::url($path));
             }
             
-
+        
             // Customer modelini kullanarak veritabanına kaydet
             $customer = Customer::create($validatedData);
-
+        
             // İşlem başarılı ise commit yap
             DB::commit();
-
+        
         
             return response()->json(['message' => 'Müşteri başarıyla oluşturuldu', 'result' => $customer], 201);
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -91,6 +89,7 @@ class CustomerController extends Controller
             return response()->json(['errors' => $e->errors()], 422);
         }
     }
+
 
 
     /**
