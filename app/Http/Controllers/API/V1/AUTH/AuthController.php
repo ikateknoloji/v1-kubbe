@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1\AUTH;
 
 use App\Http\Controllers\Controller;
+use App\Mail\ResetPasswordMail;
 use App\Mail\TemporaryPasswordMail;
 use Illuminate\Http\Request;
 use App\Models\User;
@@ -32,7 +33,7 @@ class AuthController extends Controller
             // Kullanıcı tipini, token'ı ve is_temp_password değerini JSON olarak döndürür
             return response()->json([
                 'token' => $token,
-                'is_temp_password' => $user->is_temp_password,
+                'is_temp_password' => (bool) $user->is_temp_password,
             ]);
         }
     
@@ -79,8 +80,7 @@ class AuthController extends Controller
     */
     public function registerUser(Request $request)
     {
-        try {
-            // İsteği doğruluyoruz
+
             $validatedData = $request->validate([
                 'email' => 'required|string|email|max:255|unique:users',
                 'user_type' => 'required|in:manufacturer,customer',
@@ -112,11 +112,6 @@ class AuthController extends Controller
     
             // Başarılı bir şekilde oluşturulduğuna dair bir mesaj döndür
             return response()->json(['message' => ucfirst($validatedData['user_type']) . ' kullanıcısı başarıyla oluşturuldu!'], 201);
-
-        }  catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollback();
-            return response()->json(['errors' => $e->errors()], 422);
-        }
     }
 
     public function Userlogin(Request $request)
