@@ -96,7 +96,13 @@ class GetOrderController extends Controller
                 ->with(['user' => function ($query) {
                     $query->select('id', 'email');
                 }]);
-            }, 'customerInfo']) // customerInfo ilişkisini ekledik
+            }, 'customerInfo'])// customerInfo ilişkisini ekledik
+            ->with([
+                'rejects' => function ($query) {
+                    // İlgili reject bilgilerini getir
+                    $query->select('id', 'order_id', 'reason', 'created_at');
+                },
+            ]) 
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate(9);
     

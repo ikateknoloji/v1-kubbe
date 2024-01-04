@@ -179,7 +179,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
          */
         Route::prefix('admin')->group(function () {
           // Müşteri tarafından reddedilen siparişleri getirir.
-          Route::get('rejected-orders', [GetRejectOrderController::class, 'getRejectedCustomerOrders']);
+          Route::get('rejected-orders', [GetRejectOrderController::class, 'getAdminRejectedOrders']);
         });
 
 

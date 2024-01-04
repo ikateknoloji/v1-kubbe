@@ -11,7 +11,6 @@ return new class extends Migration
      */
     public function up(): void
     {
-        /* 'MO', 'OA', */ 
         Schema::create('orders', function (Blueprint $table) {
             $table->id();
             $table->string('order_name');
@@ -21,7 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('manufacturer_id')->nullable();
             $table->decimal('offer_price', 8, 2);
             $table->enum('invoice_type', ['I', 'C']);
-            $table->enum('is_rejected',['A','R','C','CR','ORC'])->default('A');
+            $table->enum('is_rejected',['A','R','C'])->default('A');
             $table->text('note')->nullable();
             $table->timestamps();
 

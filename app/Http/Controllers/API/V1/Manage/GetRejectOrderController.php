@@ -17,13 +17,20 @@ class GetRejectOrderController extends Controller
     public function getAdminRejectedOrders()
     {
         // 'CR' (Customer Rejected) ve 'MR' (Manufacturer Rejected) durumlarına sahip siparişleri ve reject bilgilerini al
-        $orders = Order::whereIn('is_rejected', ['CR', 'MR'])
+        $orders = Order::whereIn('is_rejected', ['R'])
             ->with([
                 'rejects' => function ($query) {
                     // İlgili reject bilgilerini getir
                     $query->select('id', 'order_id', 'reason', 'created_at');
                 },
             ])
+            ->with(['customer' => function ($query) {
+                // İlgili müşteri bilgilerini getir
+                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone','image_url')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
+            }, 'customerInfo'])
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate();
             
