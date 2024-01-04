@@ -43,12 +43,13 @@ class RejectOrderController extends Controller
         $reject = new Reject([
             'reason' => $reason,
         ]);
+        $shortReason = substr($reason, 0, 30) . (strlen($reason) > 30 ? '...' : '');
 
         $order->rejects()->save($reject);
         // Müşteriye bildirim gönder
         broadcast(new CustomerNotificationEvent($order->customer_id, [
             'title' => 'Sipariş Reddedildi',
-            'body' => 'Siparişiniz admin tarafından reddedildi. Sebep: ' . $reason,
+            'body' => 'Siparişiniz admin tarafından reddedildi. Sebep: ' . $shortReason,
             'order' => $order,
         ]));
         
@@ -194,39 +195,48 @@ class RejectOrderController extends Controller
      */
     public function cancelOrder(Request $request, $orderId)
     {
-        $request->validate([
-            'reason' => 'required|string',
-        ], [
-            'reason.required' => 'Neden alanı gereklidir.',
-            'reason.string' => 'Neden alanı bir metin olmalıdır.',
-        ]);
-
-        $reason = $request->input('reason');
 
         $order = Order::find($orderId);
 
-        if (!$order) {
-            return response()->json(['message' => 'Sipariş bulunamadı.'], 404);
+    
+            $order->is_rejected = 'C';
+            $order->save();
+    
+            // OrderStatusChangedEvent olayını yayınla
+            event(new OrderStatusChangedEvent($order,[
+                'title' => 'Sipariş İptal Edildi',
+                'body' => 'Sipariş ' . $order->status . ' durumundaki sipariş iptal edildi.',
+                'order' => $order,
+            ]));
+    
+            return response()->json(['message' => 'Sipariş İptal durumuna getirildi ve ilişkili reddetme bilgileri korundu.'], 200);
+       
+    }
+
+    public function activateOrder($orderId)
+    {
+        $order = Order::find($orderId);
+    
+        if ($order->is_rejected == 'R' ||  $order->is_rejected == 'C' ) {
+            // İlişkili Reject modelini bul ve sil
+            $reject = $order->rejects;
+            if ($reject) {
+                $reject->delete();
+            }
+    
+            $order->is_rejected = 'A';
+            $order->save();
+    
+            // Müşteriye bildirim gönder
+            broadcast(new CustomerNotificationEvent($order->customer_id, [
+                'title' => 'Sipariş Aktif Edildi',
+                'body' => 'Siparişiniz admin tarafından aktif edildi.',
+                'order' => $order,
+            ]));
+    
+            return response()->json(['message' => 'Sipariş aktif durumuna getirildi ve ilişkili reddetme bilgileri silindi.'], 200);
+        } else {
+            return response()->json(['message' => 'Bu sipariş zaten aktif durumda.'], 400);
         }
-
-        $order->status = 'C';
-        $order->save();
-
-        $orderCancellation = new OrderCancellation([
-            'reason' => $reason,
-            'approved' => true,
-        ]);
-
-        $order->orderCancellation()->save($orderCancellation);
-
-        // OrderStatusChangedEvent olayını yayınla
-        event(new OrderStatusChangedEvent($order,[
-            'title' => 'Sipariş Durumu Değişti',
-            'body' => 'Sipariş ' . $order->order_code . ' durumu değişti.',
-            'order' => $order,
-        ]));
-
-
-        return response()->json(['message' => 'Sipariş iptal edildi.'], 200);
     }
 }

@@ -37,6 +37,28 @@ class GetRejectOrderController extends Controller
         return response()->json(['orders' => $orders], 200);
     }
 
+    public function getAdminCanceledOrders()
+    {
+        // 'CR' (Customer Rejected) ve 'MR' (Manufacturer Rejected) durumlarına sahip siparişleri ve reject bilgilerini al
+        $orders = Order::whereIn('is_rejected', ['C'])
+            ->with([
+                'rejects' => function ($query) {
+                    // İlgili reject bilgilerini getir
+                    $query->select('id', 'order_id', 'reason', 'created_at');
+                },
+            ])
+            ->with(['customer' => function ($query) {
+                // İlgili müşteri bilgilerini getir
+                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone','image_url')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
+            }, 'customerInfo'])
+            ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+            ->paginate();
+            
+        return response()->json(['orders' => $orders], 200);
+    }
     /**
      * 'R' (Rejected) durumuna sahip siparişleri getirir.
      *

@@ -180,6 +180,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('admin')->group(function () {
           // Müşteri tarafından reddedilen siparişleri getirir.
           Route::get('rejected-orders', [GetRejectOrderController::class, 'getAdminRejectedOrders']);
+          Route::get('canceled-orders', [GetRejectOrderController::class, 'getAdminCanceledOrders']);
         });
 
 
@@ -227,6 +228,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
         
             // TODO: Bir siparişi iptal eder.
             Route::post('cancel-order/{orderId}', [RejectOrderController::class, 'cancelOrder']);
+
+            Route::post('actived-order/{orderId}', [RejectOrderController::class, 'activateOrder']);
 
         });       
         
