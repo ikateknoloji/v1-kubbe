@@ -340,11 +340,7 @@ img {
     <table align="center" cellpadding="0" cellspacing="0" role="none">
       <tr>
         <td class="w-[552px] max-w-full">
-          <div class="my-12 sm:my-8 text-center">
-            <a href="https://ikatech.tech">
-              <img src="images/maizzle.png" width="70" alt="Maizzle">
-            </a>
-          </div>
+
 
           <table class="w-full" cellpadding="0" cellspacing="0" role="none">
             <tr>
@@ -374,9 +370,11 @@ img {
 
 
                 
-                 <form>
-                   <textarea class="w-full text-center bg-white text-blue-600  focus:outline-none text-xl pt-6 resize-none" id="copyArea" onclick="this.select()">{{ $tempPassword }}</textarea>
-                 </form>
+<div style="display: flex;justify-content: center;align-items: center;max-width: 400px; margin: auto;">
+<p style="text-align: center;font-size: 28px;padding: 20px;">
+    {{ $tempPassword }}
+</p>
+</div>  
                
 
                

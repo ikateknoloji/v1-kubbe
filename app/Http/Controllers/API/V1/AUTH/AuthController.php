@@ -68,6 +68,7 @@ class AuthController extends Controller
             'email' => $validatedData['email'],  // Email bilgisi istekten alınıyor
             'password' => Hash::make($validatedData['password']),  // Şifre hash'leniyor
             'user_type' => 'admin',  // Kullanıcı tipi 'admin' olarak ayarlanıyor
+            'is_temp_password' => false
         ]);
 
         // Başarılı bir şekilde oluşturulduğuna dair bir mesaj dönülüyor
