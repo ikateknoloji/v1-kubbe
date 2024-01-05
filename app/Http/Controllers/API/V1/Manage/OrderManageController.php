@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AdminNotification;
 use App\Models\Order;
 use App\Models\OrderImage;
+use App\Models\OrderItem;
 use App\Models\User;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
@@ -570,5 +571,46 @@ class OrderManageController extends Controller
         }
     }
     
-    
+    public function updateOrderItem(Request $request, $id)
+    {
+        try {
+            // Validasyon
+            $request->validate([
+                'quantity' => 'required|integer',
+                'unit_price' => 'required|numeric',
+            ]);
+        
+            // Belirli bir OrderItem'ı bul
+            $orderItem = OrderItem::findOrFail($id);
+        
+            // quantity ve unit_price değerlerini güncelle
+            $orderItem->quantity = $request->input('quantity');
+            $orderItem->unit_price = $request->input('unit_price');
+        
+            // Değişiklikleri kaydet
+            $orderItem->save();
+        
+            // İlgili Order'ı bul
+            $order = Order::findOrFail($orderItem->order_id);
+        
+            // Order'ın tüm OrderItem'larını al
+            $orderItems = $order->orderItems;
+        
+            // quantity ve unit_price değerlerinin çarpımının toplamını hesapla
+            $total = $orderItems->sum(function ($item) {
+                return $item->quantity * $item->unit_price;
+            });
+        
+            // offer_price değerini güncelle
+            $order->offer_price = $total;
+            $order->save();
+        
+            return response()->json(['message' => 'OrderItem and Order updated successfully'], 200);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json(['errors' => $e->errors()], 422);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'An error occurred while updating the OrderItem and Order'], 500);
+        }
+    }
+
 }

@@ -281,6 +281,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::get('/customer/notifications', [NotificationController::class, 'getCustomerNotifications']);
         Route::post('customer/notifications/{id}/read', [NotificationController::class, 'markAsReadCustomer']);
 
+        Route::put('/update-order/order-item/{id}', [OrderManageController::class, 'updateOrderItem']);
 
         /**
          * ? Şipariş durum bilgisini değiştirme.
