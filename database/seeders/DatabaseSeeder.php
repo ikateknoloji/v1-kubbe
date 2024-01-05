@@ -29,6 +29,8 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
+        $this->call(UserNotificationsTableSeeder::class);
+
 /*
         // Admin kullanıcısını oluştur
         User::factory()->create(['user_type' => 'admin']);
