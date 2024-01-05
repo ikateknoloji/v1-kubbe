@@ -22,6 +22,9 @@ return new class extends Migration
             $table->enum('invoice_type', ['I', 'C']);
             $table->enum('is_rejected',['A','R','C'])->default('A');
             $table->text('note')->nullable();
+            $table->timestamp('production_start_date')->nullable(); // Üretime başlama tarihi
+            $table->timestamp('production_date')->nullable(); // Üretim tarihi
+            $table->timestamp('delivery_date')->nullable(); // Teslim tarihi
             $table->timestamps();
 
             $table->foreign('customer_id')->references('user_id')->on('customers')->onDelete('cascade');

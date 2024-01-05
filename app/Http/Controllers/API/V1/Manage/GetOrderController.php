@@ -190,6 +190,113 @@ class GetOrderController extends Controller
         return response()->json(['order' => $order], 200);        
     }
     
+/**
+ * Belirtilen 'id' değerine sahip tekil siparişi getirir.
+ * Ancak, siparişin 'customer_id' değeri, Auth bilgileri ile aynı olmalıdır.
+ *
+ * @param  int  $id
+ * @return \Illuminate\Http\JsonResponse
+ */
+public function getOrderByIdForCustomer($id)
+{
+    // Auth bilgilerini al
+    $user = Auth::user();
+
+    $order = Order::with([
+        'customer.user',
+        'manufacturer.user',
+        'orderItems.productType',
+        'orderItems.productCategory',
+        'orderImages',
+        'rejects',
+        'orderCancellation',
+        'customerInfo', // customerInfo ilişkisini ekledik
+        'invoiceInfo' // customerInfo ilişkisini ekledik
+    ])->find($id);
+
+    // Siparişin 'customer_id' değeri, Auth bilgileri ile aynı olmalıdır
+    if ($order->customer->user->id != $user->id) {
+        return response()->json(['error' => 'Bu siparişi görüntüleme yetkiniz yok.'], 403);
+    }
+
+    // İlgili resim tiplerini filtreleme
+    $filteredImages = $order->orderImages
+        ->whereIn('type', ['L', 'D','P','PR','SC','PL'])
+        ->groupBy('type')
+        ->map(function ($images) {
+            return $images->map(function ($image) {
+                return [
+                    'id' => $image->id,
+                    'order_id' => $image->order_id,
+                    'type' => $image->type,
+                    'image_url' => $image->image_url,
+                    'path' => $image->path,
+                    'mime_type' => $image->mime_type,
+                    'created_at' => $image->created_at,
+                    'updated_at' => $image->updated_at,
+                ];
+            })->first(); // Sadece ilk resmi al
+        });
+
+    // Dönüştürülmüş resimleri, sipariş nesnesine ekleyin
+    $order->formatted_order_images = $filteredImages->toArray();
+
+    // Dönüştürülmüş sipariş nesnesini kullanabilirsiniz
+    return response()->json(['order' => $order], 200);
+}
+
+    /**
+    * Belirtilen 'id' değerine sahip tekil siparişi getirir.
+    * Ancak, siparişin 'manufacturer_id' değeri, Auth bilgileri ile aynı olmalıdır.
+    *
+    * @param  int  $id
+    * @return \Illuminate\Http\JsonResponse
+    */
+    public function getOrderByIdForManufacturer($id)
+    {
+        // Auth bilgilerini al
+        $user = Auth::user();
+
+        $order = Order::with([
+            'customer.user',
+            'manufacturer.user',
+            'orderItems.productType',
+            'orderItems.productCategory',
+            'orderImages',
+            'rejects',
+        ])->find($id);
+
+        // Siparişin 'manufacturer_id' değeri, Auth bilgileri ile aynı olmalıdır
+        if ($order->manufacturer->user->id != $user->id) {
+            return response()->json(['error' => 'Bu siparişi görüntüleme yetkiniz yok.'], 403);
+        }
+
+        // İlgili resim tiplerini filtreleme
+        $filteredImages = $order->orderImages
+            ->whereIn('type', ['L','PR','PL'])
+            ->groupBy('type')
+            ->map(function ($images) {
+                return $images->map(function ($image) {
+                    return [
+                        'id' => $image->id,
+                        'order_id' => $image->order_id,
+                        'type' => $image->type,
+                        'image_url' => $image->image_url,
+                        'path' => $image->path,
+                        'mime_type' => $image->mime_type,
+                        'created_at' => $image->created_at,
+                        'updated_at' => $image->updated_at,
+                    ];
+                })->first(); // Sadece ilk resmi al
+            });
+
+        // Dönüştürülmüş resimleri, sipariş nesnesine ekleyin
+        $order->formatted_order_images = $filteredImages->toArray();
+
+        // Dönüştürülmüş sipariş nesnesini kullanabilirsiniz
+        return response()->json(['order' => $order], 200);
+    }
+
 
     /**
      * Belirtilen müşteri 'id' değerine sahip ve belirtilen 'status' değerine sahip siparişleri getirir.

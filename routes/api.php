@@ -109,7 +109,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
     });
     
     Route::apiResource('customers', CustomerController::class);
-    // TODO: Müşteri resmini güncellemek için özel bir rota.
+    //  Müşteri resmini güncellemek için özel bir rota.
     Route::post('info/{customer}/update-image', [CustomerController::class, 'updateImage']);
 
     /**
@@ -281,7 +281,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('customer')->group(function () {
           Route::get('orders', [GetOrderController::class, 'getCustomerOrders']);
           Route::get('orders/{status}', [GetOrderController::class, 'getCustomerOrdersByStatus']);
-          Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
+          Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderByIdForCustomer']);
         });
 
 
@@ -414,6 +414,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         });
 
 
+        Route::get('/order-manufacturer/orders-by-id/{id}/', [GetOrderController::class, 'getOrderByIdForManufacturer']);
 
     });
 
