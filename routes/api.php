@@ -292,6 +292,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
           // Ürünü teslim edilmiş olarak işaretlenmiş olarak güncelleme
           Route::post('/mark-product-delivered/{order}', [OrderManageController::class, 'markProductDelivered']);
+
+          Route::post('/orders-image/{orderId}/update', [OrderController::class, 'updateLogo']);
         });
 
 

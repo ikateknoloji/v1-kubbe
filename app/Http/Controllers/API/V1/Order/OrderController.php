@@ -240,4 +240,52 @@ class OrderController extends Controller
         // Başarılı ekleme yanıtı
         return response()->json(['invoice_info' => $invoiceInfo], 201);
     }
+
+    /**
+     * Bir siparişin resmini günceller.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  int  $orderId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function updateLogo(Request $request, $orderId)
+    {
+        // Siparişi bul
+        $order = Order::find($orderId);
+    
+        // Resim dosyasını kontrol et
+        if ($request->hasFile('image_url')) {
+            $image = $request->file('image_url');
+    
+            // Resim dosyasına ön ek ekle
+            $imageName = 'L' . $order->id . '.' . $image->getClientOriginalExtension();
+    
+            // 'L' tipindeki eski resmi bul ve sil
+            $orderImage = $order->orderImages()->where('type', 'L')->first();
+            if ($orderImage) {
+                Storage::delete($orderImage->path);
+            }
+    
+            // Yeni resmi kaydet
+            $path = $image->storeAs('public/images/orders', $imageName);
+    
+            // MIME tipini al
+            $mime_type = $image->getClientMimeType();
+    
+            // 'L' tipindeki OrderImage modelini güncelle
+            if ($orderImage) {
+                $orderImage->update([
+                    'image_url' => asset(Storage::url($path)),
+                    'path' => $path,
+                    'mime_type' => $mime_type, // MIME tipini kaydet
+                ]);
+            }
+    
+            return response()->json(['message' => 'Sipariş resmi başarıyla güncellendi.'], 200);
+        } else {
+            return response()->json(['message' => 'Bir resim dosyası gönderilmedi.'], 400);
+        }
+    }
+    
+
 }
