@@ -163,7 +163,6 @@ class GetOrderController extends Controller
             'orderCancellation',
             'customerInfo', // customerInfo ilişkisini ekledik
             'invoiceInfo' // customerInfo ilişkisini ekledik
-
         ])->find($id);
         
         // İlgili resim tiplerini filtreleme

@@ -307,6 +307,19 @@ Route::middleware(['auth:sanctum'])->group(function () {
           // TODO: Bir sipariş iptal talebi oluşturur.
           Route::post('/manage/cancel-order-request/{orderId}', [RejectOrderController::class, 'cancelOrderRequest']);
         });    
+
+        /**
+         * ? Şipariş üzerinde iptal ve reddedilenler.
+         * TODO: Tüm testleri yap.
+        */
+
+        Route::group(['prefix' => 'customer'], function () {
+          // TODO: Müşteri tarafından bir siparişi reddeder.
+          Route::get('/canceled/orders', [GetRejectOrderController::class, 'getUserCanceledOrders']);
+
+          // TODO: Bir sipariş iptal talebi oluşturur.
+          Route::get('/rejected/orders', [GetRejectOrderController::class, 'getRejectedCustomerOrders']);
+        }); 
     });
     
 
