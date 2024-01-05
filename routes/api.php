@@ -58,6 +58,15 @@ Route::post('/check-token', [AuthController::class, 'checkToken']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+  Route::get('/customer/notifications', [NotificationController::class, 'getCustomerNotifications']);
+
+  /**
+    * ? şifre sıfırlama işlemlerinin yapıldığı rotalar.
+    * TODO: Test amaçlı postman üzerinde istekler gerçekleştir
+    */
+  // Geçici şifre ile şifre sıfırlama için rota
+  Route::post('/temp-password', [PasswordResetController::class, 'resetPasswordWithTempPassword']);
+
   Route::get('/logout', function (Request $request) {
     $request->user()->currentAccessToken()->delete();
 
@@ -67,12 +76,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
   });
 
 
-    /**
-     * ? şifre sıfırlama işlemlerinin yapıldığı rotalar.
-     * TODO: Test amaçlı postman üzerinde istekler gerçekleştir
-     */
-    // Geçici şifre ile şifre sıfırlama için rota
-    Route::post('/temp-password', [PasswordResetController::class, 'resetPasswordWithTempPassword']);
     
     // Kullanıcının şifresini güncelleme için rota
     Route::post('/update-password', [PasswordResetController::class, 'updatePassword']);
@@ -253,6 +256,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           return $user;
         });
 
+
         /**
          * ? Müşteri bilgileri düzenleme resim ekleme veya güncelleme
          * TODO: Kullanıcı bilgileri ekle ve düzenle.
@@ -278,7 +282,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
         });
 
-        Route::get('/customer/notifications', [NotificationController::class, 'getCustomerNotifications']);
         Route::post('customer/notifications/{id}/read', [NotificationController::class, 'markAsReadCustomer']);
 
         Route::put('/update-order/order-item/{id}', [OrderManageController::class, 'updateOrderItem']);
@@ -335,6 +338,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
     Route::middleware(['user_permission:manufacturer'])->group(function () {
 
+      Route::get('/manufacturer-info', function (Request $request) {
+        $user = $request->user();
+        $user->manufacturer;
+    
+        return $user;
+      });
 
         /**
          * ? Üretici bilgileri düzenleme resim ekleme veya güncelleme
@@ -345,7 +354,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::apiResource('manufacturers', ManufacturerController::class);
       
           // TODO: Üretici resmini güncellemek için özel bir rota.
-          Route::post('{manufacturer}/update-image', [ManufacturerController::class, 'updateImage']);
+          Route::post('info/{manufacturer}/update-image', [ManufacturerController::class, 'updateImage']);
          });
         
 
@@ -355,8 +364,9 @@ Route::middleware(['auth:sanctum'])->group(function () {
           */
 
         Route::prefix('manufacturer')->group(function () {
+          Route::get('orders-item/active/{id}', [GetOrderController::class, 'getOrderById']);
           Route::get('orders', [GetOrderController::class, 'getManufacturerOrders']);
-          Route::get('orders/{status}', [GetOrderController::class, 'getManufacturerOrdersByStatus']);
+          Route::get('orders-manufacturer/{status}', [GetOrderController::class, 'getManufacturerOrdersByStatus']);
           Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
         });
 

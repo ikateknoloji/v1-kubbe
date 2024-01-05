@@ -44,4 +44,9 @@ class ManufacturerNotificationEvent implements ShouldBroadcast
             new PrivateChannel('user.' . $this->manufacturer_id),
         ];
     }
+
+    public function broadcastAs()
+    {
+        return 'manufacturer.notification';
+    }
 }

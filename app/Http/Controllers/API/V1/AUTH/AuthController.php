@@ -130,9 +130,10 @@ class AuthController extends Controller
         
             // Kullanıcının customers ve manufacturers tablolarında bir kaydının olup olmadığını kontrol eder
             $recordExists = (bool) DB::table('customers')->where('user_id', $user->id)->exists() || DB::table('manufacturers')->where('user_id', $user->id)->exists();
-        
-            // Kullanıcı tipini, token'ı, is_temp_password değerini ve record_exists değerini JSON olarak döndürür
+            
+            // Kullanıcı tipini, token'ı, is_temp_password değerini, record_exists değerini ve user_id değerini JSON olarak döndürür
             return response()->json([
+                'user_id' => $user->id,  // Kullanıcı ID'sini ekledik
                 'token' => $token,
                 'is_temp_password' => (bool) $user->is_temp_password,
                 'record_exists' => $recordExists,

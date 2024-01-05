@@ -57,7 +57,7 @@ class ManufacturerController extends Controller
                 'city' => 'required|string',
                 'district' => 'required|string',
                 'country' => 'required|string',
-                'image_url' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+                'image_url' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             ], [
                 'name.required' => 'Ad alanı gereklidir.',
                 'surname.required' => 'Soyad alanı gereklidir.',
@@ -69,6 +69,7 @@ class ManufacturerController extends Controller
                 'city.required' => 'Şehir alanı gereklidir.',
                 'district.required' => 'İlçe alanı gereklidir.',
                 'country.required' => 'Ülke alanı gereklidir.',
+                'image_url.required' => 'Geçerli bir resim dosyası yükleyin.',
                 'image_url.image' => 'Geçerli bir resim dosyası yükleyin.',
                 'image_url.mimes' => 'Resim dosyası formatı jpeg, png, jpg, gif veya svg olmalıdır.',
                 'image_url.max' => 'Resim dosyası 2048 KB boyutundan büyük olmamalıdır.',

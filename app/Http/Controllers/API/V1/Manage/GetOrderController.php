@@ -122,7 +122,7 @@ class GetOrderController extends Controller
         $orders = Order::where('customer_id', $customerId)
             ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate(9);
+            ->paginate(6);
     
         return response()->json(['orders' => $orders], 200);
     }
@@ -139,8 +139,7 @@ class GetOrderController extends Controller
         // Belirtilen üretici 'id' değerine sahip siparişleri al
         $orders = Order::where('manufacturer_id', $manufacturerId)
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->with('customerInfo') // customerInfo ilişkisini ekledik
-            ->paginate(5);
+            ->paginate(6);
 
         return response()->json(['orders' => $orders], 200);
     }
