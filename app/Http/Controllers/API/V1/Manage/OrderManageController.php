@@ -489,6 +489,7 @@ class OrderManageController extends Controller
         'surname' => 'required|string',
         'phone' => 'required|string|regex:/^([5]{1}[0-9]{9})$/',
         'email' => 'nullable|email',
+        'order_address' => 'required|string',  // Adres bilgisi için validasyon kuralı
         ];
 
         if ($request->input('invoice_type') == 'C') {
@@ -523,6 +524,8 @@ class OrderManageController extends Controller
             'tax_number.string' => 'Vergi numarası bir dize olmalıdır.',
             'email.required' => 'E-posta alanı zorunludur.',
             'email.email' => 'Geçersiz e-posta adresi.',
+            'order_address.required' => 'Adres alanı zorunludur.',
+            'order_address.string' => 'Adres bir dize olmalıdır.',
         ]);
 
 
@@ -578,6 +581,11 @@ class OrderManageController extends Controller
             $request->validate([
                 'quantity' => 'required|integer',
                 'unit_price' => 'required|numeric',
+            ], [
+                'quantity.required' => 'Miktar alanı gereklidir.',
+                'quantity.integer' => 'Miktar alanı bir tam sayı olmalıdır.',
+                'unit_price.required' => 'Birim Fiyatı alanı gereklidir.',
+                'unit_price.numeric' => 'Birim Fiyatı alanı bir sayı olmalıdır.',
             ]);
         
             // Belirli bir OrderItem'ı bul
@@ -605,9 +613,11 @@ class OrderManageController extends Controller
             $order->offer_price = $total;
             $order->save();
         
-            return response()->json(['message' => 'OrderItem and Order updated successfully'], 200);
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            return response()->json(['errors' => $e->errors()], 422);
+            return response()->json(['message' => 'Sipariş Kalemi Başarıyla Güncellendi.'], 200);
+        }catch (\Illuminate\Validation\ValidationException $e) {
+            $errors = $e->errors();
+            $firstError = array_shift($errors);
+            return response()->json(['error' => $firstError[0]], 422);
         } catch (\Exception $e) {
             return response()->json(['message' => 'An error occurred while updating the OrderItem and Order'], 500);
         }

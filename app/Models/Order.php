@@ -170,4 +170,8 @@ class Order extends Model
         return $this->hasOne(CustomerInfo::class);
     }
     
+    public function orderAddress()
+    {
+        return $this->hasOne(OrderAddress::class);
+    }
 }

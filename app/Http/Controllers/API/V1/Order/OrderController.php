@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\CustomerInfo;
 use App\Models\InvoiceInfo;
 use App\Models\Order;
+use App\Models\OrderAddress;
 use App\Models\OrderImage;
 use App\Models\OrderItem;
 use Illuminate\Http\Request;
@@ -55,6 +56,7 @@ class OrderController extends Controller
                 'phone' => ['required', 'string', 'regex:/^(\+90|0)?[1-9]{1}[0-9]{9}$/'],
                 'email' => 'nullable|email',
                 //customer_infos start
+                'order_address' => 'required|string',  // Adres bilgisi için validasyon kuralı
             ]);
 
             // Transaksiyon başlat
@@ -70,6 +72,9 @@ class OrderController extends Controller
                 'order_name' => $request->input('order_name'),
             ]);
     
+            $orderAddress = new OrderAddress(['address' => $request->input('order_address')]);
+            $order->orderAddress()->save($orderAddress);
+            
             // Sipariş öğelerini ekleyerek kaydet
             $orderItems = collect($request->input('order_items'))->map(function ($item) use ($order) {
                 return new OrderItem([
