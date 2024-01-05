@@ -58,6 +58,8 @@ Route::post('/check-token', [AuthController::class, 'checkToken']);
 
 Route::middleware(['auth:sanctum'])->group(function () {
 
+  Route::post('customer/notifications/{id}/read', [NotificationController::class, 'markAsReadCustomer']);
+
   Route::get('/customer/notifications', [NotificationController::class, 'getCustomerNotifications']);
 
   /**
@@ -282,7 +284,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderById']);
         });
 
-        Route::post('customer/notifications/{id}/read', [NotificationController::class, 'markAsReadCustomer']);
 
         Route::put('/update-order/order-item/{id}', [OrderManageController::class, 'updateOrderItem']);
 
