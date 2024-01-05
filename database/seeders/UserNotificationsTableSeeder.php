@@ -28,17 +28,7 @@ class UserNotificationsTableSeeder extends Seeder
                     'message' => json_encode([
                         'title' => 'Sipariş Güncellemesi',
                         'body' => "Siparişinizin detayları aşağıdadır:",
-                        'order' => [
-                            'order_id' => $order->id,
-                            'order_name' => $order->order_name,
-                            'order_code' => $order->order_code,
-                            'status' => $order->status,
-                            'offer_price' => $order->offer_price,
-                            'invoice_type' => $order->invoice_type,
-                            'is_rejected' => $order->is_rejected,
-                            'note' => $order->note,
-                            'manufacturer' => $manufacturer->name,
-                        ],
+                        'order' => $order->toArray(),
                     ]),
                     'is_read' => false,
                 ];
