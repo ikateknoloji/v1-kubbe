@@ -42,6 +42,9 @@ class Order extends Model
         'is_rejected',
         'note',
         'offer_price',
+        'production_start_date',
+        'production_date',
+        'delivery_date',
     ];
 
     protected $appends = ['original_status', 'status_color'];
