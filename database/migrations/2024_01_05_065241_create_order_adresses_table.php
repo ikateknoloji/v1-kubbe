@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('order_adresses', function (Blueprint $table) {
             $table->id();
+            $table->text('address');
             $table->timestamps();
         });
     }
