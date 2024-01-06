@@ -161,7 +161,8 @@ class GetOrderController extends Controller
             'rejects',
             'orderCancellation',
             'customerInfo', // customerInfo ilişkisini ekledik
-            'invoiceInfo' // customerInfo ilişkisini ekledik
+            'invoiceInfo',
+            'orderAddress' // customerInfo ilişkisini ekledik
         ])->find($id);
         
         // İlgili resim tiplerini filtreleme
@@ -211,7 +212,8 @@ public function getOrderByIdForCustomer($id)
         'rejects',
         'orderCancellation',
         'customerInfo', // customerInfo ilişkisini ekledik
-        'invoiceInfo' // customerInfo ilişkisini ekledik
+        'invoiceInfo',
+        'orderAddress' // customerInfo ilişkisini ekledik
     ])->find($id);
 
     // Siparişin 'customer_id' değeri, Auth bilgileri ile aynı olmalıdır
@@ -384,4 +386,31 @@ public function getOrderByIdForCustomer($id)
         'Content-Disposition' => 'attachment; filename="'.$originalFileName.'"'
     ]);
     }
+
+    public function getManufacturerOrderHistory()
+    {
+        $manufacturerId = Auth::id();
+    
+        // Belirtilen üretici 'id' değerine sahip ve 'production_date' değeri null olmayan siparişleri al
+        $orders = Order::where('manufacturer_id', $manufacturerId)
+            ->whereNotNull('production_date')
+            ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+            ->paginate(6);
+    
+        return response()->json(['order_history' => $orders], 200);
+    }
+
+    public function getCustomerOrderHistory()
+    {
+        $customerId = Auth::id();
+
+        // Belirtilen müşteri 'id' değerine sahip ve 'production_date' değeri null olmayan siparişleri al
+        $orders = Order::where('customer_id', $customerId)
+            ->whereNotNull('production_date')
+            ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+            ->paginate(6);
+
+        return response()->json(['order_history' => $orders], 200);
+    }
+    
 }

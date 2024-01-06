@@ -281,6 +281,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('customer')->group(function () {
           Route::get('orders', [GetOrderController::class, 'getCustomerOrders']);
           Route::get('orders/{status}', [GetOrderController::class, 'getCustomerOrdersByStatus']);
+          Route::get('order-history', [GetOrderController::class, 'getCustomerOrderHistory']);
           Route::get('orders-item/{id}', [GetOrderController::class, 'getOrderByIdForCustomer']);
         });
 
@@ -367,6 +368,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
         Route::prefix('manufacturer')->group(function () {
           Route::get('orders-item/active/{id}', [GetOrderController::class, 'getOrderById']);
           Route::get('orders', [GetOrderController::class, 'getManufacturerOrders']);
+          Route::get('order-history', [GetOrderController::class, 'getManufacturerOrderHistory']);
           Route::get('orders-manufacturer/{status}', [GetOrderController::class, 'getManufacturerOrdersByStatus']);
           Route::get('orders/{id}', [GetOrderController::class, 'getOrderById']);
         });

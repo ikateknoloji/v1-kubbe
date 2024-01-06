@@ -72,7 +72,7 @@ class OrderController extends Controller
                 'order_name' => $request->input('order_name'),
             ]);
     
-            $orderAddress = new OrderAddress(['address' => $request->input('address')]);
+            $orderAddress = new OrderAddress(['address' => $request->input('order_address')]);
             $order->orderAddress()->save($orderAddress);
             
             // Sipariş öğelerini ekleyerek kaydet
