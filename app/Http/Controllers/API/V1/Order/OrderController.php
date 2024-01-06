@@ -72,7 +72,7 @@ class OrderController extends Controller
                 'order_name' => $request->input('order_name'),
             ]);
     
-            $orderAddress = new OrderAddress(['address' => $request->input('order_address')]);
+            $orderAddress = new OrderAddress(['address' => $request->input('address')]);
             $order->orderAddress()->save($orderAddress);
             
             // Sipariş öğelerini ekleyerek kaydet
@@ -102,7 +102,6 @@ class OrderController extends Controller
                     'phone' => $request->input('phone'),
                     'email' => $request->input('email'),
                     'order_id' => $order->id, // Yeni oluşturulan siparişin ID'si
-                    'address' => $request->input('order_address'),
                 ]);
             }
             
@@ -241,7 +240,6 @@ class OrderController extends Controller
             'surname' => $request->input('surname'),
             'phone' => $request->input('phone'),
             'email' => $request->input('email'),
-            'order_address' => $request->input('order_address'),
             'order_id' => $order->id, // Yeni oluşturulan siparişin ID'si
         ]);
         // Başarılı ekleme yanıtı

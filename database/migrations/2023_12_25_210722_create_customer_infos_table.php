@@ -17,7 +17,6 @@ return new class extends Migration
             $table->string('surname');
             $table->string('phone');
             $table->string('email')->nullable();
-            $table->string('address')->nullable(); // Adres
             $table->timestamps();
 
             $table->unsignedBigInteger('order_id');
