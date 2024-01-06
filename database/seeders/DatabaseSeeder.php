@@ -10,6 +10,7 @@ use App\Models\CustomerInfo;
 use App\Models\InvoiceInfo;
 use App\Models\Manufacturer;
 use App\Models\Order;
+use App\Models\OrderAddress;
 use App\Models\OrderImage;
 use App\Models\OrderItem;
 use App\Models\ProductCategory;
@@ -29,7 +30,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(UserNotificationsTableSeeder::class);
 
 /*
         // Admin kullanıcısını oluştur
@@ -69,8 +69,8 @@ class DatabaseSeeder extends Seeder
         ->configureInvoiceType('C') 
         ->count(10)
         ->create();
-*/
 
+*/
 
 
 /*
@@ -414,6 +414,7 @@ $product_categories = [
         ->create()
         ;
 */
-    
+           // $this->call(UserNotificationsTableSeeder::class);
+
     }
 }

@@ -30,6 +30,9 @@ class OrderManufacturerFactory extends Factory
             'invoice_type' => $this->faker->randomElement(['I', 'C']),
             'is_rejected' => 'A',
             'note' => $this->faker->optional()->text,
+            'production_start_date' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'production_date' => $this->faker->dateTimeBetween('-1 month', 'now'),
+            'delivery_date' => $this->faker->dateTimeBetween('now', '+1 month')
         ];
     }
 
