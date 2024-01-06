@@ -407,6 +407,7 @@ public function getOrderByIdForCustomer($id)
         // Belirtilen müşteri 'id' değerine sahip ve 'production_date' değeri null olmayan siparişleri al
         $orders = Order::where('customer_id', $customerId)
             ->whereNotNull('production_date')
+            ->with('customerInfo') // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
             ->paginate(6);
 
