@@ -64,7 +64,6 @@ class OrderManageController extends Controller
                 'design_image.required' => 'Lütfen bir tasarım resmi yükleyin.',
                 'design_image.image' => 'Dosya bir resim olmalıdır.',
                 'design_image.mimes' => 'Dosya formatı jpeg, png, jpg, gif veya svg olmalıdır.',
-                'design_image.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
 
             // Sipariş durumunu kontrol et, sadece 'DP' durumundakileri güncelle

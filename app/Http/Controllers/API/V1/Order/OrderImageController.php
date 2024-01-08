@@ -138,7 +138,7 @@ public function updateImage(Request $request, OrderImage $orderImage)
 {
     try {
         $request->validate([
-            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf|max:2048',
+            'image_url' => 'nullable|file|mimes:jpeg,png,jpg,gif,svg,pdf',
         ], [
             'image_url.image' => 'Geçersiz resim formatı.',
             'image_url.mimes' => 'Geçersiz resim MIME türü.',
