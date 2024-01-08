@@ -8,6 +8,7 @@ use App\Models\OrderImage;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class GetOrderController extends Controller
 {
@@ -343,25 +344,6 @@ public function getOrderByIdForCustomer($id)
     /*
     public function downloadImage($imageId)
     {
-            // Resim bulma işlemi
-            $orderImage = OrderImage::find($imageId);
-    
-            if (!$orderImage) {
-                return response()->json(['error' => 'Resim bulunamadı.'], 404);
-            }
-
-            // Dosyanın tam yolu
-            $filePath = storage_path("app/{$orderImage->path}");
-
-            // Dosya adını al
-            $fileName = basename($filePath);
-    
-            // İndirme işlemi
-            return response()->download($filePath, $fileName);
-    }
-    */
-    public function downloadImage($imageId)
-    {
     // Veritabanından ilgili imageId'ye sahip dosya bilgisini al
     $orderImage = OrderImage::findOrFail($imageId);
 
@@ -386,6 +368,55 @@ public function getOrderByIdForCustomer($id)
         'Content-Disposition' => 'attachment; filename="'.$originalFileName.'"'
     ]);
     }
+    */
+    
+    
+    public function downloadImage($imageId)
+    {
+    // Veritabanından ilgili imageId'ye sahip dosya bilgisini al
+    $orderImage = OrderImage::findOrFail($imageId);
+
+    // Dosyanın tam yolunu belirle
+    $filePath = public_path(str_replace('public/', 'storage/', $orderImage->path));
+
+
+    // Dosyanın boyutunu al
+    $fileSize = filesize($filePath);
+
+    // Dosyanın MIME tipini belirle
+    $finfo = finfo_open(FILEINFO_MIME_TYPE);
+    $contentType = finfo_file($finfo, $filePath);
+    finfo_close($finfo);
+
+    // İndirme işlemi başladığında zamanı kaydet
+    $startTime = microtime(true);
+
+    // Dosyayı parça parça okuyup kullanıcıya gönder
+    $response = new StreamedResponse(function () use ($filePath) {
+        $handle = fopen($filePath, 'rb');
+        while (!feof($handle)) {
+            echo fread($handle, 1024);
+            ob_flush();
+            flush();
+        }
+        fclose($handle);
+    }, 200, [
+        'Content-Type' => $contentType,
+        'Content-Length' => $fileSize, // Content-Length başlığını ayarla
+        'Content-Disposition' => 'attachment; filename="' . $orderImage->path . '"'
+    ]);
+
+    // İndirme işlemi bittiğinde zamanı kaydet ve süreyi hesapla
+    $endTime = microtime(true);
+    $elapsedTime = $endTime - $startTime;
+
+    // İndirme süresini yanıtın başına ekle
+    $response->headers->add(['X-Elapsed-Time' => $elapsedTime]);
+
+    return $response;
+    }
+    
+
 
     public function getManufacturerOrderHistory()
     {
