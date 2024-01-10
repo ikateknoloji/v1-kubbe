@@ -19,8 +19,12 @@ class GetOrderController extends Controller
      */
     public function getActiveOrders()
     {
+        
+        $oneWeekAgo = \Carbon\Carbon::now()->subWeek();
+
         // 'A' (Active) durumuna sahip ve teslim edilmemiş siparişleri al
         $orders = Order::where('is_rejected', 'A')
+            ->where('created_at', '>=', $oneWeekAgo)
             ->whereDoesntHave('orderItems', function ($query) {
                 $query->where('status', 'PD'); // 'PD' (Ürün Teslim Edildi) durumuna sahip orderItems olmayanları al
             })
@@ -32,7 +36,7 @@ class GetOrderController extends Controller
                 }]);
             }, 'customerInfo']) // customerInfo ilişkisini ekledik
             ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
-            ->paginate(9);
+            ->paginate(12);
     
         return response()->json(['orders' => $orders], 200);
     }

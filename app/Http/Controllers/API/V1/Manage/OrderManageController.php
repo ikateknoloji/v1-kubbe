@@ -203,32 +203,7 @@ class OrderManageController extends Controller
             // Gelen üretici bilgilerini kontrol et
             $request->validate([
                 'manufacturer_id' => 'required|exists:manufacturers,user_id',
-                'order_logo' => 'required|mimes:jpeg,png,jpg,gif,svg,pdf',
-            ], 
-            [
-                'order_logo.required' => 'Logo çıktısı dosyası gereklidir.',
-                'order_logo.mimes' => 'Dosya formatı jpeg, png, jpg, gif, svg veya pdf olmalıdır.',
-                'order_logo.max' => 'Dosya boyutu maksimum 2048 kilobayt olmalıdır.',
             ]);
-
-            // Resim dosyasını yükle ve bilgileri al
-            $image = $request->file('order_logo');
-            $imageName = 'order_logo' . $order->id . '.' . $image->getClientOriginalExtension();
-            $path = $image->storeAs('public/images/order_logo', $imageName);
-
-            // MIME tipini al
-            $mime_type = $image->getClientMimeType();
-
-            // OrderImage modeline order_id'yi ekleyerek kaydet
-            $orderImage = new OrderImage([
-                'type' => 'PL', // Ödeme tipi
-                'image_url' => asset(Storage::url($path)),
-                'path' => $path,
-                'mime_type' => $mime_type, // MIME tipini kaydet
-                'order_id' => $order->id,
-            ]);
-
-            $order->orderImages()->save($orderImage);
 
             // Üreticiyi seç ve sipariş durumunu 'MS' (Üretici Seçimi) olarak güncelle
             $order->update([
