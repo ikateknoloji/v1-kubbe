@@ -215,25 +215,35 @@ class OrderController extends Controller
 
     protected function addCorporateInvoiceInfo(Order $order, Request $request)
     {
+        // addressControll değerine göre 'address' alanının doğrulama kuralını belirle
+        if ($request->input('addressControll') == 'true') {
+            $addressRule = 'required|string';
+        } else {
+            $addressRule = 'nullable|string';
+        }
+    
         // Fatura bilgilerini doğrula
         $request->validate([
             'company_name' => 'required|string',
-            'address' => 'required|string',
+            'address' => $addressRule,
             'tax_office' => 'required|string',
             'tax_number' => 'required|string',
             'email' => 'required|email',
         ]);
-
+    
+        // addressControll değerine göre hangi adresin kaydedileceğini belirle
+        $address = $request->input('addressControll') == 'true' ? $request->input('address') : $request->input('order_address');
+    
         // Fatura bilgilerini ekleyerek kaydet
         $invoiceInfo = InvoiceInfo::create([
             'order_id' => $order->id,
             'company_name' => $request->input('company_name'),
-            'address' => $request->input('address'),
+            'address' => $address,
             'tax_office' => $request->input('tax_office'),
             'tax_number' => $request->input('tax_number'),
             'email' => $request->input('email'),
         ]);
-
+    
         // Müşteri bilgilerini ekleyerek kaydet
         $customerInfo = CustomerInfo::create([
             'name' => $request->input('name'),
@@ -242,10 +252,11 @@ class OrderController extends Controller
             'email' => $request->input('email'),
             'order_id' => $order->id, // Yeni oluşturulan siparişin ID'si
         ]);
+    
         // Başarılı ekleme yanıtı
         return response()->json(['invoice_info' => $invoiceInfo], 201);
     }
-
+    
     /**
      * Bir siparişin resmini günceller.
      *

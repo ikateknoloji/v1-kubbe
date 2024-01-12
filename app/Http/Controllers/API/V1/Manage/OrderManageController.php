@@ -32,7 +32,7 @@ class OrderManageController extends Controller
         // Sipariş durumunu kontrol et, sadece 'OC' durumundakileri güncelle
         if ($order->status === 'Sipariş Onayı') {
             // Sipariş durumunu 'DP' (Tasarım Aşaması) olarak güncelle
-            $order->update(['status' => 'DP']);
+            $order->update(['status' => 'DP', 'customer_read' => false]);
 
             // Müşteriye bildirim gönder
             broadcast(new CustomerNotificationEvent($order->customer_id, [
@@ -90,7 +90,7 @@ class OrderManageController extends Controller
                 $order->orderImages()->save($orderImage);
             
                 // Sipariş durumunu 'DA' (Onay) olarak güncelle
-                $order->update(['status' => 'DA']);
+                $order->update(['status' => 'DA', 'customer_read' => false]);
 
                 // Müşteriye bildirim gönder
                 broadcast(new CustomerNotificationEvent($order->customer_id, [
@@ -152,7 +152,7 @@ class OrderManageController extends Controller
             $order->orderImages()->save($orderImage);
 
             // Sipariş durumunu 'P' (Ödeme Onayı) olarak güncelle
-            $order->update(['status' => 'P']);
+            $order->update(['status' => 'P', 'admin_read' => false]);
 
                     // Admin'e bildirim gönder
             broadcast(new AdminNotificationEvent([
@@ -176,7 +176,7 @@ class OrderManageController extends Controller
         // Sipariş durumunu kontrol et, sadece 'P' durumundakileri doğrula
         if ($order->status === 'Ödeme Aşaması') {
             // Ödeme durumunu 'PA' (Ödeme Onaylandı) olarak güncelle
-            $order->update(['status' => 'PA']);
+            $order->update(['status' => 'PA', 'customer_read' => false]);
 
             // Admin'e bildirim gönder
             broadcast(new CustomerNotificationEvent($order->customer_id ,[
@@ -205,11 +205,22 @@ class OrderManageController extends Controller
                 'manufacturer_id' => 'required|exists:manufacturers,user_id',
             ]);
 
-            // Üreticiyi seç ve sipariş durumunu 'MS' (Üretici Seçimi) olarak güncelle
+            // Güncel tarihten bir iş günü sonrasını hesapla
+            $date = new \DateTime(); // Şu anki tarihi al
+            $date->modify('+1 day'); // Bir gün ekle
+
+            // Hafta sonunu kontrol et
+            if ($date->format('N') >= 6) {
+                $date->modify('next Monday'); // Eğer hafta sonu ise, bir sonraki Pazartesi'ye geç
+            }
+
+            // Üreticiyi seç, sipariş durumunu 'MS' (Üretici Seçimi) olarak güncelle ve üretim başlangıç tarihini ayarla
             $order->update([
                 'manufacturer_id' => $request->input('manufacturer_id'),
                 'status' => 'MS',
+                'production_start_date' => $date, // Üretim başlangıç tarihini ayarla
             ]);
+
             
             broadcast(new ManufacturerNotificationEvent (
                 $request->input('manufacturer_id') ,[
@@ -243,8 +254,8 @@ class OrderManageController extends Controller
         // Sipariş durumunu kontrol et, sadece 'OA' (Teklifi Onayı) durumundakileri güncelle
         if ($order->status === 'Üretici Seçimi') {
             // Sipariş durumunu 'PP' (Üretimde) olarak güncelle
-            $order->update(['status' => 'PP']); 
-                
+            $order->update(['status' => 'PP', 'admin_read' => false]);
+
             // Üreticiye bildirim gönder
             event(new CustomerNotificationEvent($order->customer_id ,[
                 'title' => 'Üretim Süreci Başlatıldı',
@@ -303,9 +314,14 @@ class OrderManageController extends Controller
 
             $order->orderImages()->save($orderImage);
         
-            // Sipariş durumunu 'PR' (Product Ready) olarak güncelle
-            $order->update(['status' => 'PR']);
-        
+            // Sipariş durumunu 'PP' (Product Ready) olarak güncelle
+            $order->update([
+                'status' => 'PR',
+                'admin_read' => false,
+                'customer_read' => false,
+                'production_date' => new \DateTime(), // Üretim tarihini ayarla
+            ]);
+            
             // Üreticiye bildirim gönder
             event(new CustomerNotificationEvent($order->customer_id ,[
                 'title' => 'Üretim Süreci Başlatıldı',
@@ -364,8 +380,13 @@ class OrderManageController extends Controller
             $order->orderImages()->save($orderImage);
         
             // Sipariş durumunu 'PIT' (Product in Transition) olarak güncelle
-            $order->update(['status' => 'PIT']);
-
+            $order->update([
+                'status' => 'PD',
+                'admin_read' => false,
+                'customer_read' => false,
+                'production_date' => new \DateTime(), // Üretim tarihini ayarla
+            ]);
+            
             // Üreticiye bildirim gönder
             event(new CustomerNotificationEvent($order->customer_id ,[
                 'title' => 'Ürün Kargoda',
@@ -455,25 +476,31 @@ class OrderManageController extends Controller
     {
         // Fatura tipine göre doğrulama kurallarını belirle
         $rules = [
-        'order_name' => 'required|string',
-        'invoice_type' => 'required|in:I,C',
-        'note' => 'nullable|string',
-        'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
-        'name' => 'required|string',
-        'surname' => 'required|string',
-        'phone' => 'required|string|regex:/^([5]{1}[0-9]{9})$/',
-        'email' => 'nullable|email',
-        'order_address' => 'required|string',  // Adres bilgisi için validasyon kuralı
+            'order_name' => 'required|string',
+            'invoice_type' => 'required|in:I,C',
+            'note' => 'nullable|string',
+            'image_url' => 'required|file|mimes:jpeg,png,jpg,gif,svg,pdf',
+            'name' => 'required|string',
+            'surname' => 'required|string',
+            'phone' => 'required|string|regex:/^([5]{1}[0-9]{9})$/',
+            'email' => 'nullable|email',
+            'order_address' => 'required|string',  // Adres bilgisi için validasyon kuralı
         ];
-
-        if ($request->input('invoice_type') == 'C') {
-        $rules['company_name'] = 'required|string';
-        $rules['address'] = 'required|string';
-        $rules['tax_office'] = 'required|string';
-        $rules['tax_number'] = 'required|string';
-        $rules['email'] = 'required|email';
+    
+        // addressControll değerine göre 'address' alanının doğrulama kuralını belirle
+        if ($request->input('addressControll') == 'true') {
+            $rules['address'] = 'required|string';
+        } else {
+            $rules['address'] = 'nullable|string';
         }
-
+    
+        if ($request->input('invoice_type') == 'C') {
+            $rules['company_name'] = 'required|string';
+            $rules['tax_office'] = 'required|string';
+            $rules['tax_number'] = 'required|string';
+            $rules['email'] = 'required|email';
+        }
+    
         $request->validate($rules,[
             'order_name' => 'Şipariş adı gereklidir',
             'invoice_type.required' => 'Fatura tipi zorunludur.',
@@ -490,7 +517,7 @@ class OrderManageController extends Controller
             'surname.string' => 'Soyadı alanı bir dize olmalıdır.',
             'company_name.required' => 'Şirket adı alanı zorunludur.',
             'company_name.string' => 'Şirket adı bir dize olmalıdır.',
-            'address.required' => 'Adres alanı zorunludur.',
+            'address.required' => 'Fatura Adresi alanı zorunludur.',
             'address.string' => 'Adres bir dize olmalıdır.',
             'tax_office.required' => 'Vergi dairesi alanı zorunludur.',
             'tax_office.string' => 'Vergi dairesi bir dize olmalıdır.',
@@ -501,12 +528,11 @@ class OrderManageController extends Controller
             'order_address.required' => 'Adres alanı zorunludur.',
             'order_address.string' => 'Adres bir dize olmalıdır.',
         ]);
-
-
     
         // Doğrulama başarılı
         return response()->json(['message' => 'Doğrulama başarılı'], 200);
     }
+    
     
     public function validateOrderItem(Request $request)
     {

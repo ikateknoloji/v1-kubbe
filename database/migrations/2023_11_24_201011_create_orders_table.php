@@ -25,6 +25,9 @@ return new class extends Migration
             $table->timestamp('production_start_date')->nullable(); // Üretime başlama tarihi
             $table->timestamp('production_date')->nullable(); // Üretim tarihi
             $table->timestamp('delivery_date')->nullable(); // Teslim tarihi
+            $table->boolean('admin_read')->default(false);
+            $table->boolean('customer_read')->default(false);
+            $table->boolean('manufacturer_read')->default(false);
             $table->timestamps();
 
             $table->foreign('customer_id')->references('user_id')->on('customers')->onDelete('cascade');
