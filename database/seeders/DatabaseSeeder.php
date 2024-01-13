@@ -7,6 +7,7 @@ namespace Database\Seeders;
 use App\Models\AdminNotification;
 use App\Models\Customer;
 use App\Models\CustomerInfo;
+use App\Models\DesignerNotification;
 use App\Models\InvoiceInfo;
 use App\Models\Manufacturer;
 use App\Models\Order;
@@ -416,5 +417,18 @@ $product_categories = [
 */
            // $this->call(UserNotificationsTableSeeder::class);
 
+// Order tablosundan rastgele bir kayıt seç
+$order = Order::inRandomOrder()->first();
+
+// Bildirimi oluştur
+        // Veritabanına designer bildirimini kaydet
+        $designerNotification = DesignerNotification::create([
+            'message' => json_encode([
+                'title' => 'Sipariş Güncellemesi',
+                'body' => "Siparişinizin detayları aşağıdadır:",
+                'order' => $order->toArray(),
+            ]),
+            'is_read' => false,
+        ]);
     }
 }

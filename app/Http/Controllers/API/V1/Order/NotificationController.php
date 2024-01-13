@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1\Order;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminNotification;
+use App\Models\DesignerNotification;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -97,4 +98,35 @@ class NotificationController extends Controller
         return response()->json(['message' => 'Notification marked as read']);
     }
 
+    /**
+    * Get the notifications for the authenticated user.
+    *
+    * @param  \Illuminate\Http\Request  $request
+    * @return \Illuminate\Http\Response
+    */
+   public function getDesingerNotifications(Request $request)
+   {
+    $notifications = DesignerNotification::orderBy('is_read')
+                      ->orderBy('created_at', 'desc')
+                      ->paginate(10);
+
+    $unreadCount = DesignerNotification::where('is_read', 0)->count();
+    
+    $response = $notifications->toArray();
+    $response['unread_count'] = $unreadCount;
+
+    return response()->json($response);
+   }
+
+   public function markAsReadDesigner(Request $request, $id)
+   {
+        $notification = DesignerNotification::find($id);
+
+        $notification->update([
+            'is_read' => true,
+            'read_by_user_id' => Auth::id()
+        ]);
+
+        return response()->json(['message' => 'Notification marked as read']);
+    }
 }

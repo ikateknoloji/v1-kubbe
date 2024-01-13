@@ -161,8 +161,6 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
 
 
-
-
         /**
          * ? Sipariş bilgilerinin servis rotası.
          * TODO: Sadece Üretici kullanıcısı ile işlemleri gerçekleştir.
@@ -238,7 +236,8 @@ Route::middleware(['auth:sanctum'])->group(function () {
 
         });       
         
-    
+        Route::get('/designer-notifications', [NotificationController::class, 'getDesingerNotifications']);
+        Route::post('/designer-notifications/mark-as-read/{id}', [NotificationController::class, 'markAsReadDesigner']);
 
     });
 

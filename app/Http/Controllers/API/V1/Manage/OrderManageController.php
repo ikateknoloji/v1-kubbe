@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1\Manage;
 
 use App\Events\AdminNotificationEvent;
 use App\Events\CustomerNotificationEvent;
+use App\Events\DesignerNotificationEvent;
 use App\Events\ManufacturerNotificationEvent;
 use App\Events\UserNotificationEvent;
 use App\Http\Controllers\Controller;
@@ -39,6 +40,12 @@ class OrderManageController extends Controller
                 'title' => 'Sipariş Durumu Değişti',
                 'body' => 'Sipariş tasarım aşamasına geçirildi.',
                 'order' => $order->toArray(),
+            ]));
+
+            broadcast(new DesignerNotificationEvent([
+                'title' => 'Şipariş Onaylandı',
+                'body' => 'Sipariş Tasarım bekliyor.',
+                'order' => $order,
             ]));
 
             return response()->json(['message' => 'Sipariş tasarım aşamasına geçirildi.'], 200);
