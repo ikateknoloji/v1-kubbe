@@ -398,7 +398,7 @@ Route::middleware(['auth:sanctum'])->group(function () {
           Route::get('/start-production/{order}', [OrderManageController::class, 'startProduction']);
           
           // Ürünü hazır olarak işaretlenmiş olarak güncelleme
-          Route::put('/mark-product-ready/{order}', [OrderManageController::class, 'markProductReady']);
+          Route::post('/mark-product-ready/{order}', [OrderManageController::class, 'markProductReady']);
         });
 
         /**

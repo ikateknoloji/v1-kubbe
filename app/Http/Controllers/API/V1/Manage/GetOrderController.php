@@ -443,4 +443,42 @@ class GetOrderController extends Controller
         return response()->json(['order_history' => $orders], 200);
     }
     
+
+    /**
+     * 'status' değeri 'PP' olan, 'estimated_production_date' değeri güncel tarih bilgisinden geri olan ve 'production_date' değeri <null>< /null> olan siparişleri getirir.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getDelayedOrders()
+    {
+        // Belirtilen 'status' değeri 'PP' olan, 'estimated_production_date' değeri güncel tarih bilgisinden geri olan ve 'production_date' değeri null olan siparişleri al
+        $orders = Order::where('status', 'PP')
+            ->where('is_rejected', 'A')
+            ->where('production_date', null)
+            ->where('estimated_production_date', '<', now())
+            ->with(['customer' => function ($query) {
+                // İlgili müşteri ve üretici bilgilerini getir
+                $query->select('user_id', 'id', 'name', 'surname', 'company_name', 'phone','image_url')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
+            }, 'manufacturer' => function ($query) {
+                // İlgili müşteri ve üretici bilgilerini getir
+                $query->select('user_id','id', 'name', 'surname', 'company_name', 'phone')
+                ->with(['user' => function ($query) {
+                    $query->select('id', 'email');
+                }]);
+            }, 'customerInfo'])// customerInfo ilişkisini ekledik
+            ->with([
+                'rejects' => function ($query) {
+                    // İlgili reject bilgilerini getir
+                    $query->select('id', 'order_id', 'reason', 'created_at');
+                },
+            ]) 
+            ->orderByDesc('updated_at') // En son güncellenenlere göre sırala
+            ->paginate(9);  
+
+        return response()->json(['orders' => $orders], 200);
+    }
+
 }
