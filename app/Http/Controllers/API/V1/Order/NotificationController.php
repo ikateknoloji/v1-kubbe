@@ -4,6 +4,7 @@ namespace App\Http\Controllers\API\V1\Order;
 
 use App\Http\Controllers\Controller;
 use App\Models\AdminNotification;
+use App\Models\CourierNotification;
 use App\Models\DesignerNotification;
 use App\Models\UserNotification;
 use Illuminate\Http\Request;
@@ -127,6 +128,31 @@ class NotificationController extends Controller
             'read_by_user_id' => Auth::id()
         ]);
 
+        return response()->json(['message' => 'Notification marked as read']);
+    }
+    public function getCourierNotifications(Request $request)
+    {
+        $notifications = CourierNotification::orderBy('is_read')
+                          ->orderBy('created_at', 'desc')
+                          ->paginate(10);
+    
+        $unreadCount = CourierNotification::where('is_read', 0)->count();
+        
+        $response = $notifications->toArray();
+        $response['unread_count'] = $unreadCount;
+    
+        return response()->json($response);
+    }
+    
+    public function markAsReadCourier(Request $request, $id)
+    {
+        // Bildirimi bul
+        $notification = CourierNotification::find($id);
+    
+        // Bildirimi okundu olarak işaretle
+        $notification->is_read = true;
+        $notification->save();
+    
         return response()->json(['message' => 'Notification marked as read']);
     }
 }

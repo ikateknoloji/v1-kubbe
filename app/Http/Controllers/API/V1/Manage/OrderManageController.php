@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API\V1\Manage;
 
 use App\Events\AdminNotificationEvent;
+use App\Events\CourierNotificationEvent;
 use App\Events\CustomerNotificationEvent;
 use App\Events\DesignerNotificationEvent;
 use App\Events\ManufacturerNotificationEvent;
@@ -353,7 +354,13 @@ class OrderManageController extends Controller
                 'title' => 'Ürün Hazır',
                 'body' => 'Sipariş numarası' . $order->order_code . ' için ürün hazır hale getirildi.',
                 'order' => $order->toArray(),
-            ]));            
+            ]));      
+            
+            event(new CourierNotificationEvent([
+                'title' => 'Ürün Hazır',
+                'body' => 'Sipariş numarası' . $order->order_code . ' için ürün hazır hale getirildi.',
+                'order' => $order->toArray(),
+            ])); 
 
             return response()->json(['message' => 'Ürün hazırlandı ve kaydedildi.'], 200);
         }

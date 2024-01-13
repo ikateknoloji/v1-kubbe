@@ -28,6 +28,10 @@ Broadcast::channel('designer-notifications', function ($user) {
     return Auth::check();
 });
 
+Broadcast::channel('courier-notifications', function ($user) {
+    return Auth::check();
+});
+
 
 
 Broadcast::channel('user.{userId}', function ($user, $userId) {
