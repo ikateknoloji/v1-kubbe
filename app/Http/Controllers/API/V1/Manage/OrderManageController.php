@@ -214,11 +214,23 @@ class OrderManageController extends Controller
                 $date->modify('next Monday'); // Eğer hafta sonu ise, bir sonraki Pazartesi'ye geç
             }
 
+            // Tahmini üretim tarihini hesapla
+            $estimated_date = clone $date;
+            for ($i = 0; $i < 3; $i++) {
+                $estimated_date->modify('+1 day');
+                // Hafta sonunu kontrol et
+                if ($estimated_date->format('N') >= 6) {
+                    $estimated_date->modify('next Monday'); // Eğer hafta sonu ise, bir sonraki Pazartesi'ye geç
+                }
+            }
+
+
             // Üreticiyi seç, sipariş durumunu 'MS' (Üretici Seçimi) olarak güncelle ve üretim başlangıç tarihini ayarla
             $order->update([
                 'manufacturer_id' => $request->input('manufacturer_id'),
                 'status' => 'MS',
-                'production_start_date' => $date, // Üretim başlangıç tarihini ayarla
+                'production_start_date' => $date->format('Y-m-d H:i:s'), // Üretim başlangıç tarihini MySQL uyumlu formatla ayarla
+                'estimated_production_date' => $estimated_date->format('Y-m-d H:i:s'), // 
             ]);
 
             

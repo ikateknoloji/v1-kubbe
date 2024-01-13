@@ -45,6 +45,7 @@ class Order extends Model
         'production_start_date',
         'production_date',
         'delivery_date',
+        'estimated_production_date'
     ];
 
     protected $appends = ['original_status', 'status_color'];
