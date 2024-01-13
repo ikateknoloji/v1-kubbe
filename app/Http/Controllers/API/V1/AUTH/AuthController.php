@@ -33,6 +33,7 @@ class AuthController extends Controller
             // Kullanıcı tipini, token'ı ve is_temp_password değerini JSON olarak döndürür
             return response()->json([
                 'token' => $token,
+                'user_type' => $user->user_type,
                 'is_temp_password' => (bool) $user->is_temp_password,
             ]);
         }
@@ -133,6 +134,7 @@ class AuthController extends Controller
             
             // Kullanıcı tipini, token'ı, is_temp_password değerini, record_exists değerini ve user_id değerini JSON olarak döndürür
             return response()->json([
+                'user_type' => $user->user_type,
                 'user_id' => $user->id,  // Kullanıcı ID'sini ekledik
                 'token' => $token,
                 'is_temp_password' => (bool) $user->is_temp_password,

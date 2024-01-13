@@ -24,6 +24,10 @@ Broadcast::channel('admin-notifications', function ($user) {
     return Auth::check();
 });
 
+Broadcast::channel('designer-notifications', function ($user) {
+    return Auth::check();
+});
+
 
 
 Broadcast::channel('user.{userId}', function ($user, $userId) {

@@ -65,7 +65,7 @@ class OrderController extends Controller
             // Yeni sipariş oluştur
             $order = Order::create([
                 'customer_id' => Auth::id(),
-                'order_code' => Str::random(8), // 8 karakterlik random bir değer
+                'order_code' => Str::random(2) .'-'. time(), // Timestamp değeri ve 2 karakterlik random bir değer
                 'status' => 'OC', // Otomatik olarak "OC" durumu
                 'invoice_type' => $request->input('invoice_type'),
                 'offer_price' => $request->input('offer_price'),
